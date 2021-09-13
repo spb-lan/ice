@@ -2,4 +2,4 @@
 
 cd $(dirname $(dirname $(dirname $0)));
 
-cd vendor/ifacesoft/ice && git tag $1 && git push --tags;
+cd vendor/lan/ice-fork && git tag $1 && git push --tags;

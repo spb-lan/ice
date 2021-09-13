@@ -9,7 +9,7 @@ use Ifacesoft\Ice\Core\Infrastructure\Core\Application;
 ob_start();
 ob_implicit_flush(false);
 
-define('ICE_VENDOR_NAME', 'ifacesoft/ice');
+define('ICE_VENDOR_NAME', 'lan/ice-fork');
 define('ICE_CONFIG_PATH', 'config/Ice/Core/Module.php');
 define('ICE_RUN_PATH', 'source/run.php');
 define('ICE_BOOTSTRAP_PATH', 'source/bootstrap.php');

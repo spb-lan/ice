@@ -191,7 +191,7 @@ class Module extends Config
     public static function getAll()
     {
         if (self::$modules === null) {
-            if (file_exists(MODULE_DIR . 'vendor/lam/ice-fork/source/bootstrap.php')) {
+            if (file_exists(MODULE_DIR . 'vendor/lan/ice-fork/source/bootstrap.php')) {
                 require_once MODULE_DIR . 'vendor/lan/ice-fork/source/bootstrap.php';
             } else {
                 require_once MODULE_DIR . 'source/bootstrap.php';

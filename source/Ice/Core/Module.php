@@ -77,7 +77,7 @@ class Module extends Config
             'routerClass' => 'Ice\Router\Ice'
         ],
         'modules' => [
-            'ifacesoft/ice' => '/ice'
+            'lan/ice-fork' => '/ice'
         ]
     ];
 

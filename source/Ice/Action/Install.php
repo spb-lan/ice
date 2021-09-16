@@ -266,7 +266,7 @@ class Install extends Action
             Module::$defaultConfig['module']
         );
 
-        $moduleConfig['modules'] = ['ifacesoft/ice' => '/ice'];
+        $moduleConfig['modules'] = ['lan/ice-fork' => '/ice'];
 
         $config = [
             'Ice\\Core\\Request' => [

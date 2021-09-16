@@ -204,6 +204,8 @@ class Cli extends DataProvider
     {
         $connection = [];
 
+        global $argv;
+        
         if (!empty($argv)) {
             $_SERVER['argv'] = $argv;
         }

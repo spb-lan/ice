@@ -101,6 +101,7 @@ class App
                     }
                 } catch (\Exception $e) {
                     fwrite(STDERR, Logger::getInstance(__CLASS__)->error('Application (App): render content failure', __FILE__, __LINE__, $e) . "\n");
+                    exit(1);
                 }
             }
         } else {

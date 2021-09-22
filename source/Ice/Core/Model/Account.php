@@ -34,7 +34,7 @@ abstract class Model_Account extends Model
 
             $this->signUpAccount($accountForm, $this->signUpUser($accountForm, $container), $container);
 
-            if ($accountForm->isConfirm() && $this->isConfirmed($accountForm) === false) {
+            if ($this->isConfirmed($accountForm) === false && $accountForm->isConfirm()) { // именно в такой послеовательности
                 $this->sendConfirmToken($accountForm, $this->getConfirmToken($accountForm));
             }
 

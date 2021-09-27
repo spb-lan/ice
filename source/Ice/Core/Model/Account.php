@@ -178,10 +178,10 @@ abstract class Model_Account extends Model
     abstract protected function getConfirmToken(Account_Form $accountForm);
 
     /**
-     * @param array $values
+     * @param Account_Form $accountForm
      * @return array
      */
-    abstract public function registerVerify(array $values);
+    abstract public function registerVerify(Account_Form $accountForm);
 
     /**
      * @param Account_Form $accountForm
@@ -284,8 +284,8 @@ abstract class Model_Account extends Model
     }
 
     /**
-     * @param array $values
+     * @param Account_Form $accountForm
      * @return array
      */
-    abstract public function loginVerify(array $values);
+    abstract public function loginVerify(Account_Form $accountForm);
 }

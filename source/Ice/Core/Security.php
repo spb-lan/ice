@@ -6,6 +6,7 @@ use Ice\Core;
 use Ice\Exception\Access_Denied_Security;
 use Ice\Exception\Config_Error;
 use Ice\Exception\FileNotFound;
+use Ice\Exception\Http_Forbidden;
 use Ice\Exception\Security_Account_NotFound;
 use Ice\Model\User;
 
@@ -65,7 +66,7 @@ abstract class Security extends Container
             return;
         }
 
-        throw new Access_Denied_Security($message);
+        throw new Http_Forbidden($message);
     }
 
     /**

@@ -88,10 +88,10 @@ abstract class Action_Job extends Action
                 'log' => ob_get_clean()
             ])->save();
 
-            if (Environment::getInstance()->isProduction()) {
-                // todo: будем удалять через гарбадж коллектор
-                Directory::remove($task->getTempDir());
-            }
+//            if (Environment::getInstance()->isProduction()) {
+//                // todo: будем удалять через гарбадж коллектор
+//                Directory::remove($task->getTempDir());
+//            }
 
             $dataProvider->delete($key);
 

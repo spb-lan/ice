@@ -66,7 +66,7 @@ abstract class Security extends Container
             return;
         }
 
-        throw new Http_Forbidden($message);
+        throw new Access_Denied_Security($message);
     }
 
     /**

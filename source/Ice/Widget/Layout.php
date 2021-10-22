@@ -34,8 +34,8 @@ class Layout extends Block_Render
     {
         $output = parent::build($input);
 
-        $this->widget('title', ['widget' => $this->getWidget($input['title'])]);
         $this->widget('main', ['widget' => $this->getWidget($input['main'])]);
+        $this->widget('title', ['widget' => $this->getWidget($input['title'])]);
         $this->widget('staticResources', ['widget' => $this->getWidget(Resource_Static::class)]);
         $this->widget('dynamicResources', ['widget' => $this->getWidget(Resource_Dynamic::class)]);
         $this->widget('footerJs', ['widget' => $this->getWidget(Resource_FooterJs::class)]);

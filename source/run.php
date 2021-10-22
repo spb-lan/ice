@@ -16,6 +16,9 @@ require_once __DIR__ . '/bootstrap.php';
 
 try {
     App::run();
+
+    exit(0);
 } catch (Exception | Throwable $e) {
-    die("\033[0;31m" . $e->getMessage() . "\n" . "\033[0m");
+    fwrite(STDERR, "\033[0;31m" . $e->getMessage() . "\033[0m\n");
+    exit(1);
 }

@@ -1078,22 +1078,34 @@ class Mysqli extends DataSource
      * @author dp <denis.a.shestakov@gmail.com>
      *
      */
-    public function commitTransaction()
+    public function commitTransaction($retry = 0)
     {
-        if ($this->savePointLevel === 0) {
-            $this->getConnection()->commit();
-            Logger::log('level_' . $this->savePointLevel, 'mysql commit', 'INFO');
+        $maxRetry = 3;
 
-            $this->savePointLevel = null;
+        try {
+            if ($this->savePointLevel === 0) {
+                $this->getConnection()->commit();
+                Logger::log('level_' . $this->savePointLevel, 'mysql commit', 'INFO');
 
-            $this->getConnection()->autocommit(true);
-            Logger::log('true', 'mysql autocommit', 'INFO');
+                $this->savePointLevel = null;
 
-            $this->executeNativeQuery('SET TRANSACTION ISOLATION LEVEL ' . Mysqli::TRANSACTION_REPEATABLE_READ);
-        } else {
-            $this->releaseSavePoint('transaction');
+                $this->getConnection()->autocommit(true);
+                Logger::log('true', 'mysql autocommit', 'INFO');
 
-            $this->savePointLevel--;
+                $this->executeNativeQuery('SET TRANSACTION ISOLATION LEVEL ' . Mysqli::TRANSACTION_REPEATABLE_READ);
+            } else {
+                $this->releaseSavePoint('transaction');
+
+                $this->savePointLevel--;
+            }
+        } catch (\Throwable $e) {
+            if ($retry < $maxRetry) {
+                sleep(1);
+
+                $this->commitTransaction(++$retry);
+            } else {
+                throw $e;
+            }
         }
     }
 
@@ -1122,7 +1134,7 @@ class Mysqli extends DataSource
      *
      * @version 1.1
      */
-    public function rollbackTransaction($e = null)
+    public function rollbackTransaction($e = null, $retry = 1)
     {
         Logger::getInstance()->warning(['Transaction rollback (level: {$0})', $this->savePointLevel], __FILE__, __LINE__, $e);
 

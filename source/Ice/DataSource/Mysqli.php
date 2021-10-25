@@ -1134,7 +1134,7 @@ class Mysqli extends DataSource
      *
      * @version 1.1
      */
-    public function rollbackTransaction($e = null, $retry = 1)
+    public function rollbackTransaction($e = null)
     {
         Logger::getInstance()->warning(['Transaction rollback (level: {$0})', $this->savePointLevel], __FILE__, __LINE__, $e);
 

@@ -513,7 +513,7 @@ abstract class DataSource extends Container
      * @version 0
      * @since   0
      */
-    abstract public function commitTransaction();
+    abstract public function commitTransaction($retry = 0);
 
     /**
      * Rollback transaction
@@ -524,7 +524,7 @@ abstract class DataSource extends Container
      * @author anonymous <email>
      *
      */
-    abstract public function rollbackTransaction($e);
+    abstract public function rollbackTransaction($e = null);
 
     /**
      * Create save point

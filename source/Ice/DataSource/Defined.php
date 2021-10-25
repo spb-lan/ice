@@ -339,7 +339,7 @@ class Defined extends DataSource
      * @version 0
      * @since   0
      */
-    public function commitTransaction()
+    public function commitTransaction($retry = 0)
     {
         // TODO: Implement commitTransaction() method.
     }

@@ -262,12 +262,12 @@ class Console
             $commandString .= $andS . "\n" . $command; // && if background wait return?
         }
 
-        if ($toBackground) {
-            $commandString = '(' . $commandString . ' &)';
-        }
-
         if ($toDevNull) {
             $commandString .= ' > /dev/null 2>&1';
+        }
+
+        if ($toBackground) {
+            $commandString .= ' &';
         }
 
         $returnCode = -1;

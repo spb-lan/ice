@@ -99,6 +99,9 @@ class Mysqli extends DataSource
             );
 
             switch ($errno) {
+                case 1213:
+                    $exceptionClass = DataSource_Deadlock::class;
+                    break;
                 default:
                     $exceptionClass = DataSource_Select::class;
             }

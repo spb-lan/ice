@@ -280,7 +280,6 @@ class Console
             if ($returnCode !== 0) {
                 throw new Console_Run(
                     ['{$0} [code:  {$1}]', [$commandString, $returnCode]],
-
                     ['output' => $output],
                     null,
                     null,

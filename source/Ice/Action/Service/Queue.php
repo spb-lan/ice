@@ -63,7 +63,7 @@ class Queue extends Action_Service
                     ->getSelectQuery(['/pk', '/job_class']);
 
                 foreach ($newTaskQuery->getRows(-1) as $task) {
-                    Console::run('vendor/bin/ice ' . escapeshellarg($task['queue_task_job_class']) . ' taskPk=' . $task['queue_task_pk'] . ' queueKey=' . $queueKey . ' wait=' . $queue['task_wait'], true, true);
+                    Console::run('vendor/bin/ice ' . escapeshellarg($task['queue_task_job_class']) . ' taskPk=' . $task['queue_task_pk'] . ' queueKey=' . $queueKey . ' wait=' . $queue['task_wait'] . ' force=' . (int)!$task['queue_task_started_at'], true, true);
                 }
             }
 

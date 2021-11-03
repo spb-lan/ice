@@ -103,6 +103,7 @@ abstract class Action_Job extends Action
                 sleep(rand(30, 60));
 
                 $input['required'] = 1;
+                $input['force'] = 1;
 
                 return $this->run($input);
             }

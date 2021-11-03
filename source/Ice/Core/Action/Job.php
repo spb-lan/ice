@@ -106,7 +106,25 @@ abstract class Action_Job extends Action
 
                 return $this->run($input);
             }
-        } catch (\Exception $e) {
+
+            $dataProvider->delete($key);
+
+            $logger->info('Finish job #' . $task->getPkValue() . ' with deadlock error', Logger::DANGER);
+
+            $task->set([
+                '/finished_at' => Date::get(),
+                'log' => ob_get_clean(),
+                'errors' => Helper_Logger::getMessage($e) . "\n" . $e->getTraceAsString()
+            ]);
+
+            $this->transacionRestart(
+                function () use ($task) {
+                    $task->save();
+                }
+            );
+
+            throw $e;
+        } catch (\Exception | \Throwable $e) {
             $dataProvider->delete($key);
 
             $logger->info('Finish job #' . $task->getPkValue() . ' with error', Logger::DANGER);

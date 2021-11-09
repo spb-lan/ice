@@ -119,5 +119,7 @@ try {
 
     echo nl2br(str_replace(MODULE_DIR, '', $e->getTraceAsString()) . "\n");
 
-    die('Terminated. Bye-bye...' . "\n");
+    echo 'Terminated. Bye-bye...' . "\n";
+
+    exit(1);
 }

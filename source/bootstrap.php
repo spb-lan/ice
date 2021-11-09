@@ -115,7 +115,7 @@ try {
 } catch (Exception $e) {
     $message = str_replace(MODULE_DIR, '', $e->getMessage());
 
-    echo '<span style="font-weight: bold;">Bootstrapping failed: ' . $message . '</span><br>';
+    echo '<span style="font-weight: bold;">Bootstrapping failed on ' . \Ice\Core\Request::host() . ': ' . $message . '</span><br>';
 
     echo nl2br(str_replace(MODULE_DIR, '', $e->getTraceAsString()) . "\n");
 

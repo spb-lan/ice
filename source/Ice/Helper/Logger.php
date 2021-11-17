@@ -50,6 +50,8 @@ class Logger
      */
     public static function outputFb($exception, $output)
     {
+        //НАКОНЕЦ-ТО!!!
+        return;
         if (Environment::getInstance()->isProduction()) {
             return;
         }

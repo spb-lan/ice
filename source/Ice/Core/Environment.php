@@ -113,8 +113,8 @@ class Environment extends Config
             }
         }
 
-        echo var_dump(PHP_EOL . getenv() . PHP_EOL);
-        echo var_dump(PHP_EOL . $config->gets() . PHP_EOL);
+        echo PHP_EOL . var_dump(getenv()) . PHP_EOL;
+        echo PHP_EOL . var_dump($config->gets()) . PHP_EOL;
         $environment = [];
 
         foreach ($config->gets() as $name => $env) {
@@ -127,7 +127,7 @@ class Environment extends Config
                 break;
             }
         }
-        echo var_dump($environmentName . PHP_EOL);
+        echo var_dump($environmentName) . PHP_EOL;
         if (!$environmentName) {
             throw new \RuntimeException('Host ' . $host . ' not configured in environment');
         }

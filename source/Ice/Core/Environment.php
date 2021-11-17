@@ -100,7 +100,7 @@ class Environment extends Config
                 }
             }
         }
-        echo var_dump($environmentName . PHP_EOL);
+        
         if ($environmentName !== self::PRODUCTION && (!empty($_SERVER['argv']) || !empty($_REQUEST['iceEnv']))) {
             if (!empty($_REQUEST['iceEnv'])) {
                 $environmentName = $_REQUEST['iceEnv'];
@@ -113,8 +113,6 @@ class Environment extends Config
             }
         }
 
-        echo PHP_EOL . var_dump(getenv()) . PHP_EOL;
-        echo PHP_EOL . var_dump($config->gets()) . PHP_EOL;
         $environment = [];
 
         foreach ($config->gets() as $name => $env) {
@@ -127,7 +125,7 @@ class Environment extends Config
                 break;
             }
         }
-        echo var_dump($environmentName) . PHP_EOL;
+
         if (!$environmentName) {
             throw new \RuntimeException('Host ' . $host . ' not configured in environment');
         }

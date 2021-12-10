@@ -492,6 +492,7 @@ class Logger
      */
     public static function fb($value, $label = null, $type = 'LOG', $options = [])
     {
+        return;
         $firePhp = VENDOR_DIR . 'ccampbell/chromephp/ChromePhp.php';
 
         if (Request::isCli() || Environment::getInstance()->isProduction() || headers_sent() || !is_file($firePhp)) {

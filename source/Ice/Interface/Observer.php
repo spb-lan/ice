@@ -1,6 +1,6 @@
 <?php
 
-namespace Ice\Interface;
+namespace Ice\Interfaces;
 
 interface Observer
 {

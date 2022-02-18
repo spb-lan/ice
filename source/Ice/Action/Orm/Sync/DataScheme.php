@@ -144,9 +144,11 @@ class Orm_Sync_DataScheme extends Action
                     $dataSourceKey
                 );
 
+                $references = empty($schemeTables[$tableName]['references'])? [] :($schemeTables[$tableName]['references']);
+
                 $isModelReferencesUpdated = $this->updateModelReferences(
                     $table['references'],
-                    $schemeTables[$tableName]['references'],
+                    $references,
                     $tableName,
                     $schemeTables[$tableName]['modelClass'],
                     $dataSourceKey
@@ -237,7 +239,7 @@ class Orm_Sync_DataScheme extends Action
                 }
                 unset($column);
 
-                if ($isModelFieldsUpdated) {
+                if ($isModelFieldsUpdated && !empty($tableName)) {
                     Scheme::createQueryBuilder()
                         ->eq(['table_name' => $tableName])
                         ->getUpdateQuery(['columns__json' => Json::encode($table['columns'])], $dataSourceKey)
@@ -288,6 +290,11 @@ class Orm_Sync_DataScheme extends Action
     private function createModel($table, $force, $dataSourceKey)
     {
         CodeGenerator_Model::getInstance($table['modelClass'])->generate($table, $force);
+
+        if(is_null($table['scheme']['tableName'])){
+            \Ice\Core\Debuger::dumpToFile($table);
+            return;
+        }
 
         Scheme::createQueryBuilder()->getInsertQuery(
             [

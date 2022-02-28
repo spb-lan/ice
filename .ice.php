@@ -26,7 +26,7 @@ return [
         ],
     ],
     'modules' => [
-        'ifacesoft/ice-cli' => [],
-        'ifacesoft/ice-http' => [],
+        'spb-lan/ice-cli-fork' => [],
+        'spb-lan/ice-http-fork' => [],
     ],
 ];

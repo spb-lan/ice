@@ -52,7 +52,7 @@ if ($iceRealPath = realpath(VENDOR_DIR . ICE_VENDOR_NAME)) {
     define('ICE_DIR', MODULE_DIR);
 }
 
-define('ICE_CORE_DIR', VENDOR_DIR . 'spb-lan/ice-core/');
+define('ICE_CORE_DIR', VENDOR_DIR . 'spb-lan/ice-core-fork/');
 
 try {
     global $loader;

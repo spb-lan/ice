@@ -169,11 +169,12 @@ class Sql extends QueryTranslator
             ? $updatePart
             : $query->getQueryBuilder()->getSqlParts(strtolower(substr(__FUNCTION__, strlen('translate'))));
 
-            $update = $part['_update'];
-            $addToValues = array_flip($part['_add_to_values']);
+        $update = $part['_update'];
+        //если есть колонки которые нужно прибавить к значению в БД
+        $addToValues = isset($part['_add_to_values']) ? array_flip($part['_add_to_values']) : [];
 
-            unset($part['_update']);
-            unset($part['_add_to_values']);
+        unset($part['_update']);
+        unset($part['_add_to_values']);
 
         if (!$part) {
             return '';
@@ -237,9 +238,9 @@ class Sql extends QueryTranslator
             $sql .= implode(
                 ',',
                 array_map(
-                    function ($fieldName) use ($fieldColumnMap,$addToValues) {
+                    function ($fieldName) use ($fieldColumnMap, $addToValues) {
                         $columnName = $fieldColumnMap[$fieldName];
-                        $valueToAdd = isset($addToValues[$fieldName]) ?' `'. $columnName .'` + ':'' ;
+                        $valueToAdd = isset($addToValues[$fieldName]) ? ' `' . $columnName . '` + ' : '';
                         return "\n\t" . '`' . $columnName . '`=' . $valueToAdd . Sql::SQL_CLAUSE_VALUES . '(`' . $columnName . '`)';
                     },
                     $fieldNames

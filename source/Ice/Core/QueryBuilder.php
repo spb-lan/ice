@@ -1655,10 +1655,12 @@ class QueryBuilder
      * @author dp <denis.a.shestakov@gmail.com>
      *
      */
-    public function getInsertQuery(array $data, $update = false, $dataSourceKey = null)
+    public function getInsertQuery(array $data, $update = false, $dataSourceKey = null, $addToValues = [])
     {
         $this->queryType = QueryBuilder::TYPE_INSERT;
         $this->sqlParts[QueryBuilder::PART_VALUES]['_update'] = $update;
+        //не понятно, как передовать поля
+        $this->sqlParts[QueryBuilder::PART_VALUES]['_add_to_values'] = $addToValues;
         return $this->affect($data, QueryBuilder::PART_VALUES, $dataSourceKey);
     }
 

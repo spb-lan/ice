@@ -14,6 +14,8 @@ use Ice\Model\Queue_Task;
 
 abstract class Action_Job extends Action
 {
+    private static $retryDeadlock = 3;
+    
     /**
      * Action config
      *
@@ -26,7 +28,7 @@ abstract class Action_Job extends Action
         $config['input']['taskPk'] = ['providers' => Cli::class];
         $config['input']['queueKey'] = ['providers' => Cli::class];
         $config['input']['force'] = ['providers' => Cli::class, 'default' => 0];
-        $config['input']['required'] = ['providers' => Cli::class, 'default' => 0];
+        $config['input']['retryDeadlock'] = ['providers' => Cli::class, 'default' => 0];
         $config['input']['wait'] = ['providers' => Cli::class, 'default' => 1];
 
         return $config;
@@ -88,25 +90,46 @@ abstract class Action_Job extends Action
                 'log' => ob_get_clean()
             ])->save();
 
-            if (Environment::getInstance()->isProduction()) {
-                // todo: будем удалять через гарбадж коллектор
-                Directory::remove($task->getTempDir());
-            }
+//            if (Environment::getInstance()->isProduction()) {
+//                // todo: будем удалять через гарбадж коллектор
+//                Directory::remove($task->getTempDir());
+//            }
 
             $dataProvider->delete($key);
 
             return [];
         } catch (DataSource_Deadlock $e) {
-            if (!$input['required']) {
+            if ($input['retryDeadlock'] < self::$retryDeadlock) {
                 ob_clean();
 
                 sleep(rand(30, 60));
 
-                $input['required'] = 1;
+                $input['retryDeadlock']++;
+                $input['force'] = 1;
 
+                $logger->info('Retray job #' . $task->getPkValue() . ' with deadlock error', Logger::WARNING);
+                
                 return $this->run($input);
             }
-        } catch (\Exception $e) {
+
+            $dataProvider->delete($key);
+
+            $logger->info('Finish job #' . $task->getPkValue() . ' with deadlock error', Logger::DANGER);
+
+            $task->set([
+                '/finished_at' => Date::get(),
+                'log' => ob_get_clean(),
+                'errors' => Helper_Logger::getMessage($e) . "\n" . $e->getTraceAsString()
+            ]);
+
+            $this->transacionRestart(
+                function () use ($task) {
+                    $task->save();
+                }
+            );
+
+            throw $e;
+        } catch (\Exception | \Throwable $e) {
             $dataProvider->delete($key);
 
             $logger->info('Finish job #' . $task->getPkValue() . ' with error', Logger::DANGER);
@@ -114,7 +137,7 @@ abstract class Action_Job extends Action
             $task->set([
                 '/finished_at' => Date::get(),
                 'log' => ob_get_clean(),
-                'errors' => Helper_Logger::getMessage($e)
+                'errors' => Helper_Logger::getMessage($e) . "\n" . $e->getTraceAsString()
             ]);
 
             $this->transacionRestart(

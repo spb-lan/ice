@@ -82,7 +82,10 @@ class QueryBuilder
     const SQL_COMPARISON_KEYWORD_IS_NOT_NULL = 'IS NOT NULL';
     const SQL_ORDERING_ASC = 'ASC';
     const SQL_ORDERING_DESC = 'DESC';
+    const SQL_ORDERING_RAND = 'RAND()';
     const SEARCH_KEYWORD = '$search';
+    const DEFAULT_PAGINATION_PAGE = 1;
+    const DEFAULT_PAGINATION_LIMIT = 10;
 
     /**
      * Main model class for builded query
@@ -171,6 +174,8 @@ class QueryBuilder
     private $widgets = [];
 
     private $transforms = [];
+
+    private $rowsTransformCallbacks = [];
 
     /**
      * Private constructor of query builder
@@ -289,21 +294,40 @@ class QueryBuilder
             $this->sqlParts[$part][] = [
                 'class' => $modelClass,
                 'alias' => $tableAlias,
-                'data' => [[$sqlLogical, $fieldNameValues, QueryBuilder::SQL_COMPARISON_OPERATOR_RAW, null]]
+                'data' => [[$sqlLogical, $fieldNameValues, self::SQL_COMPARISON_OPERATOR_RAW, null]]
             ];
 
             return $this;
         }
 
         foreach ($fieldNameValues as $fieldName => $value) {
+            if ($fieldName === '/pk') {
+                $pkFieldNames = $modelClass::getScheme()->getPkFieldNames();
+
+                if (count($pkFieldNames) > 1) {
+                    $this->where(
+                        array_combine($pkFieldNames, array_pad((array)$value, (count($pkFieldNames)), null)),
+                        $modelTableData,
+                        $sqlComparison,
+                        $sqlLogical,
+                        $isUse,
+                        $part
+                    );
+
+                    continue;
+                }
+
+                $fieldName = reset($pkFieldNames);
+            }
+
             if (is_array($value)) {
-                if ($sqlComparison === QueryBuilder::SQL_COMPARISON_OPERATOR_EQUAL) {
+                if ($sqlComparison === self::SQL_COMPARISON_OPERATOR_EQUAL) {
                     $this->in($fieldName, $value, $modelTableData, $sqlLogical, $isUse);
 
                     continue;
                 }
 
-                if ($sqlComparison === QueryBuilder::SQL_COMPARISON_OPERATOR_NOT_EQUAL) {
+                if ($sqlComparison === self::SQL_COMPARISON_OPERATOR_NOT_EQUAL) {
                     $this->notIn($fieldName, $value, $modelTableData, $sqlLogical, $isUse);
 
                     continue;
@@ -330,7 +354,7 @@ class QueryBuilder
 
                 $valueCount = 1;
             } else {
-                $valueCount = is_string($value) && trim($value, '`') !== $value
+                $valueCount = is_string($value) && mb_strpos($value, '`') === 0 && mb_substr($value, -1) === '`'
                     ? $value
                     : count((array)$value);
             }
@@ -612,34 +636,19 @@ class QueryBuilder
             );
         }
 
-        $eq = [];
-
-        /**
-         * @var Model $modelClass
-         */
-        $modelClass = $this->getModelClassTableAlias($modelTableData)[0];
+        /** @var Model $modelClass */
+        list($modelClass, $tableAlias) = $this->getModelClassTableAlias($modelTableData);
 
         $pkFieldNames = $modelClass::getScheme()->getPkFieldNames();
 
-        foreach ((array)$pk as $pkName => $pkValue) {
-            if (empty($pkFieldNames)) {
-                break;
-            }
+        $this->eq(
+            array_combine($pkFieldNames, array_pad((array)$pk, count($pkFieldNames), null)),
+            $modelTableData,
+            $sqlLogical,
+            $isUse
+        );
 
-            if (is_int($pkName)) {
-                $eq[array_shift($pkFieldNames)] = $pkValue;
-                continue;
-            }
-
-            if (($key = array_search($pkName, $pkFieldNames)) !== false) {
-                unset($pkFieldNames[$key]);
-                $eq[$pkName] = $pkValue;
-            }
-        }
-
-        $this->eq($eq, $modelTableData, $sqlLogical);
-
-        return $modelClass == $this->getModelClass()
+        return $modelClass === $this->getModelClass()
             ? $this->limit(1)
             : $this;
     }
@@ -674,6 +683,7 @@ class QueryBuilder
      *
      * @param  $limit
      * @param int|null $offset
+     * @param bool $isUse
      * @return QueryBuilder
      *
      * @author dp <denis.a.shestakov@gmail.com>
@@ -681,8 +691,12 @@ class QueryBuilder
      * @version 0.0
      * @since   0.0
      */
-    public function limit($limit, $offset = 0)
+    public function limit($limit, $offset = 0, $isUse = true)
     {
+        if (!$isUse) {
+            return $this;
+        }
+
         $this->sqlParts[self::PART_LIMIT] = [
             'limit' => $limit,
             'offset' => $offset
@@ -1166,7 +1180,6 @@ class QueryBuilder
         list($table, $tableAlias) = $this->getModelClassTableAlias($modelTableData);
 
         if ($table instanceof Query) {
-//                $table = $table->getQueryBuilder();
             $modelClass = $table->getQueryBuilder()->getModelClass();
         } else if ($table instanceof QueryBuilder) {
             $modelClass = $table->getModelClass();
@@ -1196,6 +1209,11 @@ class QueryBuilder
                 ? $join['class']->getModelClass()
                 : $join['class'];
 
+            // todo: это лишнее, ломает кейс джойна юниона - fix it
+            if (is_array($joinModelClass)) {
+                continue;
+            }
+
             $joinModelScheme = $joinModelClass::getScheme();
 
             $oneToMany = $joinModelScheme->gets('relations/' . ModelScheme::ONE_TO_MANY);
@@ -1218,6 +1236,12 @@ class QueryBuilder
                 ? $join['class']->getModelClass()
                 : $join['class'];
 
+
+            // todo: это лишнее, ломает кейс джойна юниона - fix it
+            if (is_array($joinModelClass)) {
+                continue;
+            }
+
             $joinModelScheme = $joinModelClass::getScheme();
 
             $manyToOne = $joinModelScheme->gets('relations/' . ModelScheme::MANY_TO_ONE);
@@ -1226,8 +1250,8 @@ class QueryBuilder
                 $this->sqlParts[self::PART_JOIN][$tableAlias] = [
                     'type' => $joinType,
                     'class' => $table,
-                    'on' => '`' . $tableAlias . '`.`' . $manyToOne[$modelClass] . '` = `' .
-                        $joinTableAlias . '`.`' . $joinModelClass::getPkColumnName() . '`'
+                    'on' => '`' . $tableAlias . '`.`' . $manyToOne[$modelClass] .
+                        '` = `' . $joinTableAlias . '`.`' . $joinModelClass::getPkColumnName() . '`'
                 ];
 
                 return true;
@@ -1239,6 +1263,11 @@ class QueryBuilder
             $joinModelClass = $join['class'] instanceof QueryBuilder || $join['class'] instanceof Query
                 ? $join['class']->getModelClass()
                 : $join['class'];
+
+            // todo: это лишнее, ломает кейс джойна юниона - fix it
+            if (is_array($joinModelClass)) {
+                continue;
+            }
 
             $joinModelScheme = $joinModelClass::getScheme();
 
@@ -1388,21 +1417,19 @@ class QueryBuilder
             ];
         }
 
-        if ($fieldName == '/pk') {
+        if ($fieldName === '/pk') {
             $fieldName = $modelClass::getScheme()->getPkFieldNames();
 
-            if (count($fieldName) === 1) {
-                $fieldName = reset($fieldName);
+            $fieldAlias = count($fieldName) === 1 && !$fieldAlias
+                ? [$modelClass::getFieldName('/pk', $tableAlias)]
+                : array_pad((array)$fieldAlias, count($fieldName), null);
 
-                if (!$fieldAlias) {
-                    $fieldAlias = $modelClass::getFieldName('/pk', $tableAlias);
-                }
-            }
+            $fieldName = array_combine($fieldName, $fieldAlias);
         }
 
         $modelScheme = $modelClass::getScheme();
 
-        if ($fieldName == '*') {
+        if ($fieldName === '*') {
             $fieldName = array_merge($modelScheme->getFieldNames(), $modelScheme->getPkFieldNames());
         }
 
@@ -1628,10 +1655,12 @@ class QueryBuilder
      * @author dp <denis.a.shestakov@gmail.com>
      *
      */
-    public function getInsertQuery(array $data, $update = false, $dataSourceKey = null)
+    public function getInsertQuery(array $data, $update = false, $dataSourceKey = null, $addToValues = [])
     {
         $this->queryType = QueryBuilder::TYPE_INSERT;
         $this->sqlParts[QueryBuilder::PART_VALUES]['_update'] = $update;
+        //не понятно, как передовать поля
+        $this->sqlParts[QueryBuilder::PART_VALUES]['_add_to_values'] = $addToValues;
         return $this->affect($data, QueryBuilder::PART_VALUES, $dataSourceKey);
     }
 
@@ -1922,15 +1951,15 @@ class QueryBuilder
     /**
      * Ascending ordering
      *
-     * @param  $fieldName
+     * @param string $fieldName
      * @param array|string $modelTableData
+     * @param bool $isUse
      * @return QueryBuilder
      *
      * @throws Exception
      * @version 0.6
      * @since   0.0
      * @author dp <denis.a.shestakov@gmail.com>
-     *
      */
     public function asc($fieldName = '/pk', $modelTableData = [], $isUse = true)
     {
@@ -1973,11 +2002,22 @@ class QueryBuilder
         $this->sqlParts[self::PART_ORDER][] = [
             'modelClass' => $modelClass,
             'tableAlias' => $tableAlias,
-            'fieldName' => $modelClass::getFieldName($fieldName),
+            'fieldName' => $fieldName ? $modelClass::getFieldName($fieldName) : null,
             'order' => $ascOrDesc
         ];
 
         return $this;
+    }
+
+    /**
+     * Order by RAND()
+     *
+     * @return QueryBuilder
+     * @throws Exception
+     */
+    public function rand()
+    {
+        return $this->order(null, QueryBuilder::SQL_ORDERING_RAND);
     }
 
     /**
@@ -2272,8 +2312,8 @@ class QueryBuilder
     /**
      * Set Limits and offset by page and limit
      *
-     * @param $page
-     * @param $limit
+     * @param null $page
+     * @param null $limit
      * @return QueryBuilder
      *
      * @author dp <denis.a.shestakov@gmail.com>
@@ -2281,15 +2321,15 @@ class QueryBuilder
      * @version 0.6
      * @since   0.0
      */
-    public function setPagination($page, $limit)
+    public function setPagination($page = null, $limit = null)
     {
-        if (empty($page)) {
-            $page = 1;
-        }
+        $page = $page
+            ? (int)$page
+            : self::DEFAULT_PAGINATION_PAGE;
 
-        if (!isset($limit)) {
-            $limit = 0;
-        }
+        $limit = $limit === null
+            ? self::DEFAULT_PAGINATION_LIMIT
+            : (int)$limit;
 
         return $this
             ->setCalcFoundRows()
@@ -2363,6 +2403,20 @@ class QueryBuilder
         return $this;
     }
 
+    public function addRowsTransformCallback(\Closure $callback, array $data = [], $modelClass = null, $isUse = true)
+    {
+        if (!$isUse) {
+            return $this;
+        }
+
+        $modelClass = $modelClass
+            ? Model::getClass($modelClass)
+            : $this->getModelClass();
+
+        $this->rowsTransformCallbacks[] = [$callback, $data, $modelClass];
+        return $this;
+    }
+
     /**
      * @return string
      */
@@ -2409,6 +2463,14 @@ class QueryBuilder
     }
 
     /**
+     * @return array
+     */
+    public function getRowsTransformCallbacks()
+    {
+        return $this->rowsTransformCallbacks;
+    }
+
+    /**
      * @return Widget[]
      */
     public function getWidgets()
@@ -2420,13 +2482,17 @@ class QueryBuilder
      * @param $funcName
      * @param $argumentString
      * @param array $modelTableData
+     * @param bool $isUse
      * @return $this
      * @throws Exception
-     *
      * @todo feature using: ->func('fieldAlias', 'funcName', 'funcArgument', $modelTableData)
      */
-    public function func($funcName, $argumentString, $modelTableData = [])
+    public function func($funcName, $argumentString, $modelTableData = [], $isUse = true)
     {
+        if (!$isUse) {
+            return $this;
+        }
+
         /**
          * @var Model $modelClass
          */

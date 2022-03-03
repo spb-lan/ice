@@ -9,9 +9,9 @@
 
 namespace Ice\Core;
 
-use Ice\Core;
 use Ice\Exception\Access_Denied_Environment;
-use Ice\Helper\Type_String;
+use Ice\Exception\Config_Error;
+use Ice\Exception\FileNotFound;
 
 /**
  * Class Environment
@@ -43,8 +43,8 @@ class Environment extends Config
      * @param $message
      * @throws Access_Denied_Environment
      * @throws Exception
-     * @throws \Ice\Exception\Config_Error
-     * @throws \Ice\Exception\FileNotFound
+     * @throws Config_Error
+     * @throws FileNotFound
      */
     public static function checkAccess($environments, $message)
     {
@@ -58,22 +58,22 @@ class Environment extends Config
     /**
      * Return application environment
      *
-     * @param  string $environmentName
-     * @param  null $postfix
-     * @param  bool $isRequired
-     * @param  null $ttl
+     * @param string $environmentName
+     * @param null $postfix
+     * @param bool $isRequired
+     * @param null $ttl
      * @param array $selfConfig
      * @return Environment|Config
      * @throws Exception
-     * @throws \Ice\Exception\Config_Error
-     * @throws \Ice\Exception\FileNotFound
+     * @throws Config_Error
+     * @throws FileNotFound
      * @author dp <denis.a.shestakov@gmail.com>
      *
      * @version 0.5
      * @since   0.5
      */
     public static function getInstance(
-        $environmentName = Environment::PRODUCTION,
+        $environmentName = null,
         $postfix = null,
         $isRequired = false,
         $ttl = null,
@@ -88,13 +88,28 @@ class Environment extends Config
 
         $config = Config::getInstance(__CLASS__, null, true);
 
-        foreach ($config->gets('environments') as $hostPattern => $name) {
-            $matches = [];
-            preg_match($hostPattern, $host, $matches);
+        if ($environmentName = getenv('ICE_ENV')) {
+        } else {
+            foreach ($config->gets('environments') as $hostPattern => $name) {
+                $matches = [];
+                preg_match($hostPattern, $host, $matches);
 
-            if (!empty($matches)) {
-                $environmentName = is_array($name) ? reset($name) : $name;
-                break;
+                if (!empty($matches)) {
+                    $environmentName = is_array($name) ? reset($name) : $name;
+                    break;
+                }
+            }
+        }
+        
+        if ($environmentName !== self::PRODUCTION && (!empty($_SERVER['argv']) || !empty($_REQUEST['iceEnv']))) {
+            if (!empty($_REQUEST['iceEnv'])) {
+                $environmentName = $_REQUEST['iceEnv'];
+            } else {
+                foreach ($_SERVER['argv'] as $arg) {
+                    if (strpos($arg, 'iceEnv') !== false) {
+                        $environmentName = substr($arg, 7);
+                    }
+                }
             }
         }
 
@@ -109,6 +124,10 @@ class Environment extends Config
             if ($name === $environmentName) {
                 break;
             }
+        }
+
+        if (!$environmentName) {
+            throw new \RuntimeException('Host ' . $host . ' not configured in environment');
         }
 
         return self::$instance = self::create($environmentName, $environment);
@@ -155,15 +174,15 @@ class Environment extends Config
     /**
      * Retern Data Provider by class name
      *
-     * @param  string $class Class (found data provider for this class)
+     * @param string $class Class (found data provider for this class)
      * @param $key
-     * @param  string $index Index of data provider
+     * @param string $index Index of data provider
      * @return DataProvider
-     * @author dp <denis.a.shestakov@gmail.com>
-     *
+     * @throws Exception
      * @version 0.0
      * @since   0.0
-     * @throws Exception
+     * @author dp <denis.a.shestakov@gmail.com>
+     *
      */
     public function getProvider($class, $key, $index = 'default')
     {
@@ -176,11 +195,11 @@ class Environment extends Config
      * @param $class
      * @param $key
      * @return string
-     * @author dp <denis.a.shestakov@gmail.com>
-     *
+     * @throws Exception
      * @version 1.1
      * @since   0.0
-     * @throws Exception
+     * @author dp <denis.a.shestakov@gmail.com>
+     *
      */
     public function getDataProviderKey($class, $key)
     {

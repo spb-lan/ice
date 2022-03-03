@@ -11,7 +11,6 @@ namespace Ice\DataSource;
 
 use Ice\Core\DataProvider;
 use Ice\Core\DataSource;
-use Ice\Core\Debuger;
 use Ice\Core\Exception;
 use Ice\Core\Logger;
 use Ice\Core\Model;
@@ -25,8 +24,9 @@ use Ice\Exception\DataSource as Exception_DataSource;
 use Ice\Exception\DataSource_Deadlock;
 use Ice\Exception\DataSource_Delete;
 use Ice\Exception\DataSource_Insert;
-use Ice\Exception\DataSource_Insert_DuplicateEntry;
+use Ice\Exception\DataSource_DuplicateEntry;
 use Ice\Exception\DataSource_Select;
+use Ice\Exception\DataSource_Select_Error;
 use Ice\Exception\DataSource_Statement_Error;
 use Ice\Exception\DataSource_Statement_TableNotFound;
 use Ice\Exception\DataSource_Statement_UnknownColumn;
@@ -99,6 +99,9 @@ class Mysqli extends DataSource
             );
 
             switch ($errno) {
+                case 1213:
+                    $exceptionClass = DataSource_Deadlock::class;
+                    break;
                 default:
                     $exceptionClass = DataSource_Select::class;
             }
@@ -135,7 +138,7 @@ class Mysqli extends DataSource
             if ($indexFieldNames === true) {
                 $indexFieldNames = array_flip($modelClass::getScheme()->getPkFieldNames());
             } else {
-                $indexFieldNames = array_flip((array) $indexFieldNames);
+                $indexFieldNames = array_flip((array)$indexFieldNames);
             }
         }
 
@@ -191,12 +194,12 @@ class Mysqli extends DataSource
                 continue;
             }
 
-            if ($indexFieldNames) {
-                $indexFieldValues = implode('__', array_intersect_key($row, $indexFieldNames));
+            $indexFieldValues = $indexFieldNames
+                ? implode('__', array_intersect_key($row, $indexFieldNames))
+                : null;
 
-                if (!isset($data[QueryResult::ROWS][$indexFieldValues])) {
-                    $data[QueryResult::ROWS][$indexFieldValues] = $row;
-                }
+            if ($indexFieldValues) {
+                $data[QueryResult::ROWS][$indexFieldValues] = $row;
             } else {
                 $data[QueryResult::ROWS][] = $row;
             }
@@ -205,10 +208,9 @@ class Mysqli extends DataSource
 
         $data[QueryResult::NUM_ROWS] = count($data[QueryResult::ROWS]);
 
-        // todo: Это надо!!
-//        if ($numRows != $data[QueryResult::NUM_ROWS]) {
-//            throw new DataSource_Select_Error('Real selected rows not equal result num rows: duplicate primary key');
-//        }
+        if ($numRows != $data[QueryResult::NUM_ROWS]) {
+            throw new DataSource_Select_Error('Real selected rows not equal result num rows: duplicate primary key');
+        }
 
         foreach ($query->getQueryBuilder()->getTransforms() as list($transform, $params, $transformModelClass)) {
             $data = $transformModelClass::$transform($data, $params);
@@ -216,6 +218,17 @@ class Mysqli extends DataSource
             if (!$data) {
                 $logger->exception(
                     ['Transform (method) {$0} for model {$1} must return row. Fix it.', [$transform, $transformModelClass]],
+                    __FILE__,
+                    __LINE__
+                );
+            }
+        }
+
+        foreach ($query->getQueryBuilder()->getRowsTransformCallbacks() as list($rowTransformCallback, $params, $transformModelClass)) {
+            $data['rows'] = $rowTransformCallback($data['rows'], $params);
+            if (!$data) {
+                $logger->exception(
+                    ['TransformCallback (method) {$0} for model {$1} must return row. Fix it.', [$transform, $transformModelClass]],
                     __FILE__,
                     __LINE__
                 );
@@ -372,7 +385,7 @@ class Mysqli extends DataSource
 
             switch ($errno) {
                 case 1062:
-                    $exceptionClass = DataSource_Insert_DuplicateEntry::class;
+                    $exceptionClass = DataSource_DuplicateEntry::class;
                     break;
                 case 1213:
                     $exceptionClass = DataSource_Deadlock::class;
@@ -437,15 +450,6 @@ class Mysqli extends DataSource
      */
     public function executeInsert(Query $query)
     {
-//        // выпилить когда надо будет
-//        if (in_array('roles', $query->getQueryBuilder()->getSqlParts()['values']['fieldNames'])) {
-//            \file_put_contents(
-//                MODULE_DIR . 'rolesInsert_' . \Ice\Helper\Date::get(null, \Ice\Helper\Date::FORMAT_MYSQL_DATE) . '.log',
-//                print_r(['session' => session_id(), 'server' => $_SERVER, 'values' => $query->getBindParts()['values']], true),
-//                FILE_APPEND
-//            );
-//        }
-
         $data = [];
 
         $statement = $this->getStatement($query->getBody(), $query->getBinds());
@@ -457,7 +461,7 @@ class Mysqli extends DataSource
 
             switch ($errno) {
                 case 1062:
-                    $exceptionClass = DataSource_Insert_DuplicateEntry::class;
+                    $exceptionClass = DataSource_DuplicateEntry::class;
                     break;
                 case 1213:
                     $exceptionClass = DataSource_Deadlock::class;
@@ -482,11 +486,21 @@ class Mysqli extends DataSource
 
         $insertId = $statement->insert_id;
 
+        $autoIncrement = 1;
+        
+        if (count($query->getBindParts()[QueryBuilder::PART_VALUES]) > 1) {
+            $result = $this->query('SHOW VARIABLES LIKE "auto_increment_increment"');
+            $foundRows = $result->fetch_row();
+            $result->close();
+
+            $autoIncrement = $foundRows[1];
+        } 
+
         foreach ($query->getBindParts()[QueryBuilder::PART_VALUES] as $row) {
             if ($pkFieldName) {
-                if (!isset($row[$pkFieldName])) {
+                if (!isset($row[$pkFieldName]) && $insertId) {
                     $row[$pkFieldName] = $insertId;
-                    $insertId++;
+                    $insertId += $autoIncrement;
                 } else {
                     $insertId = null;
                 }
@@ -539,6 +553,9 @@ class Mysqli extends DataSource
             $statement->close();
 
             switch ($errno) {
+                case 1062:
+                    $exceptionClass = DataSource_DuplicateEntry::class;
+                    break;
                 case 1213:
                     $exceptionClass = DataSource_Deadlock::class;
                     break;
@@ -1064,22 +1081,34 @@ class Mysqli extends DataSource
      * @author dp <denis.a.shestakov@gmail.com>
      *
      */
-    public function commitTransaction()
+    public function commitTransaction($retry = 0)
     {
-        if ($this->savePointLevel === 0) {
-            $this->getConnection()->commit();
-            Logger::log('level_' . $this->savePointLevel, 'mysql commit', 'INFO');
+        $maxRetry = 3;
 
-            $this->savePointLevel = null;
+        try {
+            if ($this->savePointLevel === 0) {
+                $this->getConnection()->commit();
+                Logger::log('level_' . $this->savePointLevel, 'mysql commit', 'INFO');
 
-            $this->getConnection()->autocommit(true);
-            Logger::log('true', 'mysql autocommit', 'INFO');
+                $this->savePointLevel = null;
 
-            $this->executeNativeQuery('SET TRANSACTION ISOLATION LEVEL ' . Mysqli::TRANSACTION_REPEATABLE_READ);
-        } else {
-            $this->releaseSavePoint('transaction');
+                $this->getConnection()->autocommit(true);
+                Logger::log('true', 'mysql autocommit', 'INFO');
 
-            $this->savePointLevel--;
+                $this->executeNativeQuery('SET TRANSACTION ISOLATION LEVEL ' . Mysqli::TRANSACTION_REPEATABLE_READ);
+            } else {
+                $this->releaseSavePoint('transaction');
+
+                $this->savePointLevel--;
+            }
+        } catch (\Throwable $e) {
+            if ($retry < $maxRetry) {
+                sleep(1);
+
+                $this->commitTransaction(++$retry);
+            } else {
+                throw $e;
+            }
         }
     }
 

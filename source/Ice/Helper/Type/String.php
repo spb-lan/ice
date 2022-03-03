@@ -114,9 +114,10 @@ class Type_String
     /**
      * Return random string
      *
-     * @param  int $length
+     * @param int $length
      * @param array $blocks
      * @return string
+     * @throws \Exception
      * @author dp <denis.a.shestakov@gmail.com>
      *
      * A possible way to generate a random salt is by running the following command from a unix shell:
@@ -143,7 +144,7 @@ class Type_String
         $randomString = '';
 
         for ($i = 0; $i < $length; $i++) {
-            $randomString .= $characters[rand(0, $charactersLength - 1)];
+            $randomString .= $characters[random_int(0, $charactersLength - 1)];
         }
 
         return $randomString;
@@ -158,11 +159,7 @@ class Type_String
 
     public static function truncate($string, $length = 100, $append = '...')
     {
-        if (!is_numeric($length)) {
-            $length = 100;
-        }
-
-        return \mb_strimwidth($string, 0, $length, $append);
+        return StringValue::create($string)->truncate($length, $append);
     }
 
     public static function substrpos($haystack, $needle, $offset = 0, $numOffset = 0)
@@ -182,9 +179,7 @@ class Type_String
     }
 
     public static function replaceMultiplyWhitespases($string, $replacement = ' ') {
-//        $page['page_content'] = trim(preg_replace('/\s+/', ' ', $page['page_content'])); // TODO: ЭТО ЛУЧШЕ
-        
-        return trim(preg_replace('/\s{2,}/', $replacement, $string));
+        return StringValue::create($string)->replaceMultipleWhitespaces($replacement);
     }
 
     public static function replaceControlCharacters($string, $replacement = ' ') {

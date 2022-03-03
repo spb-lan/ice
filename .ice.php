@@ -9,16 +9,6 @@ return [
     'url' => 'http://ice.ifacesoft.iceframework.net',
     'type' => 'module',
     'context' => '',
-//    'source' => [
-//        'vcs' => 'mercurial',
-//        'repo' => 'https://bitbucket.org/ifacesoft/ice'
-//    ],
-//    'authors' => [
-//        [
-//            'name' => 'dp',
-//            'email' => 'denis.a.shestakov@gmail.com'
-//        ]
-//    ],
     'pathes' => [
         'config' => 'config/',
         'source' => 'source/',
@@ -36,7 +26,7 @@ return [
         ],
     ],
     'modules' => [
-        'ifacesoft/ice-cli' => [],
-        'ifacesoft/ice-http' => [],
+        'spb-lan/ice-cli-fork' => [],
+        'spb-lan/ice-http-fork' => [],
     ],
 ];

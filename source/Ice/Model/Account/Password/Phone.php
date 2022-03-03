@@ -3,20 +3,20 @@
 namespace Ice\Model;
 
 use Ice\Core\Exception;
-use Ice\Core\Model_Account_Password;
+use Ice\Core\Model_Account;
 use Ice\Exception\Config_Error;
 use Ice\Exception\Error;
 use Ice\Exception\FileNotFound;
 use Ice\Widget\Account_Form;
 
-class Account_Password_Phone extends Model_Account_Password
+class Account_Password_Phone extends Model_Account
 {
     protected static function config()
     {
         return [
             'dataSourceKey' => 'Ice\DataSource\Mysqli/default.test',
             'scheme' => [
-                'tableName' => 'ice_account_phone_password',
+                'tableName' => 'ice_account_password_phone',
                 'engine' => 'InnoDB',
                 'charset' => 'utf8_general_ci',
                 'comment' => '',
@@ -33,7 +33,7 @@ class Account_Password_Phone extends Model_Account_Password
                         'default' => null,
                         'comment' => '',
                     ],
-                    'fieldName' => 'account_phone_password_pk',
+                    'fieldName' => 'account_password_phone_pk',
                     'Ice\Widget\Model_Form' => [
                         'type' => 'number',
                         'roles' => [
@@ -140,7 +140,7 @@ class Account_Password_Phone extends Model_Account_Password
                         ],
                     ],
                 ],
-                'account_phone_password_expired' => [
+                'account_password_phone_expired' => [
                     'scheme' => [
                         'extra' => '',
                         'type' => 'datetime',
@@ -151,7 +151,7 @@ class Account_Password_Phone extends Model_Account_Password
                         'default' => null,
                         'comment' => '',
                     ],
-                    'fieldName' => 'account_phone_password_expired',
+                    'fieldName' => 'account_password_phone_expired',
                     'Ice\Widget\Model_Form' => [
                         'type' => 'date',
                         'roles' => [
@@ -225,6 +225,24 @@ class Account_Password_Phone extends Model_Account_Password
         throw new Error('Implement prolongate() method.');
     }
 
+    /**
+     * @param Account_Form $accountForm
+     * @return array|null
+     */
+    public function registerVerify(Account_Form $accountForm)
+    {
+        return $accountForm->validate();
+    }
+
+    /**
+     * @param Account_Form $accountForm
+     * @return array|void
+     */
+    public function loginVerify(Account_Form $accountForm)
+    {
+        return $accountForm->validate();
+    }
+
     protected function getAccountData(Account_Form $accountForm)
     {
         return [
@@ -250,8 +268,18 @@ class Account_Password_Phone extends Model_Account_Password
         ];
     }
 
-    public function registerVerify(array $values)
+    protected function sendConfirmToken(Account_Form $accountForm, Token $token)
     {
-        return $values;
+        // TODO: Implement sendRegisterConfirm() method.
+    }
+
+    protected function isConfirmed(Account_Form $accountForm = null)
+    {
+        // TODO: Implement isConfirmed() method.
+    }
+
+    protected function getConfirmToken(Account_Form $accountForm)
+    {
+        // TODO: Implement getConfirmToken() method.
     }
 }

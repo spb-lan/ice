@@ -59,7 +59,7 @@ class Install extends Action
 
     /** Run action
      *
-     * @param  array $input
+     * @param array $input
      * @return array
      *
      * @author anonymous <email>
@@ -109,7 +109,7 @@ class Install extends Action
                 ]
             );
         }
-        
+
         if (empty($input['vcs'])) {
             $input['vcs'] = Console::getInteractive(
                 __CLASS__,
@@ -266,16 +266,13 @@ class Install extends Action
             Module::$defaultConfig['module']
         );
 
-        $moduleConfig['modules'] = ['ifacesoft/ice' => '/ice'];
+        $moduleConfig['modules'] = ['lan/ice-fork' => '/ice'];
 
         $config = [
             'Ice\\Core\\Request' => [
                 'multiLocale' => $input['multilocale'] == 'yes' ? 1 : 0,
                 'locale' => $input['defaultLocale'],
                 'cors' => []
-            ],
-            'Ice\Helper\Api_Client_Yandex_Translate' => [
-                'translateKey' => null
             ],
             'Ice\Core\Environment' => [
                 'environments' => [
@@ -459,7 +456,10 @@ class Install extends Action
 //        copy(ICE_DIR . 'ice', MODULE_DIR . 'ice');
 //        chmod(MODULE_DIR . 'ice', 0755);
 //        copy(ICE_DIR . 'app.php', MODULE_DIR . 'app.php');
+
         Directory::copy(ICE_DIR . 'public', MODULE_DIR . 'public');
+
+        file_put_contents(MODULE_DIR . 'public/index.php', "<?php " . PHP_EOL . "require_once '../vendor/ifacesoft/ice/public/index.php';");
 
         copy(ICE_DIR . '.gitignore', MODULE_DIR . '.gitignore');
         copy(ICE_DIR . '.hgignore', MODULE_DIR . '.hgignore');
@@ -504,7 +504,17 @@ class Install extends Action
 
         Module::init();
 
-        CodeGenerator_Action::getInstance(Action::getClass($input['alias'] . ':Index'))->generate(['defaultViewRenderClass' => 'Ice:' . $input['viewRender']]);
+        CodeGenerator_Action::getInstance(Action::getClass($input['alias'] . ':Index'))
+            ->generate([
+                'defaultViewRenderClass' => 'Ice:' . $input['viewRender'],
+                'alias' => $input['alias']
+            ]);
+
+//        CodeGenerator_Widget::getInstance(Action::getClass($input['alias'] . ':Index'))
+//            ->generate([
+//                'defaultViewRenderClass' => 'Ice:' . $input['viewRender'],
+//                'alias' => $input['alias']
+//            ]);
 
         Vcs::init($input['vcs'], MODULE_DIR);
 

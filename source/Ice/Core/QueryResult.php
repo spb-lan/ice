@@ -516,9 +516,17 @@ class QueryResult implements Cacheable
     {
         $string = '';
 
+        $sql = DataSource::$isLogSql
+            ? preg_replace('/\s+/', ' ', print_r($this->getQuery()->getBody(), true))
+            : '';
+
+        $binds = DataSource::$isLogBinds
+            ? ' ("' . implode('", "', $this->getQuery()->getBinds()) . '")'
+            : '';
+        
         try {
-            $string = preg_replace('/\s+/', ' ', print_r($this->getQuery()->getBody(), true)) .
-                ' ("' . implode('", "', $this->getQuery()->getBinds()) . '") result: \'' .
+            $string = $sql .
+                $binds . ' result: \'' .
                 QueryResult::NUM_ROWS . '\' => ' . $this->getNumRows() . ', \'' .
                 QueryResult::AFFECTED_ROWS . '\' => ' . $this->getAffectedRows() . ', \'' .
                 QueryResult::FOUND_ROWS . '\' => ' . $this->getFoundRows() . ', \'' .
@@ -533,7 +541,7 @@ class QueryResult implements Cacheable
     /**
      * Return count of rows returned by query
      *
-     * @return mixed
+     * @return int
      *
      * @author dp <denis.a.shestakov@gmail.com>
      *
@@ -542,7 +550,7 @@ class QueryResult implements Cacheable
      */
     public function getNumRows()
     {
-        return $this->result[QueryResult::NUM_ROWS];
+        return (int)$this->result[QueryResult::NUM_ROWS];
     }
 
     /**
@@ -557,12 +565,15 @@ class QueryResult implements Cacheable
      */
     public function getAffectedRows()
     {
-        return $this->result[QueryResult::AFFECTED_ROWS];
+        return (int)$this->result[QueryResult::AFFECTED_ROWS];
     }
 
+    /**
+     * @return int
+     */
     public function getFoundRows()
     {
-        return $this->result[QueryResult::FOUND_ROWS];
+        return (int)$this->result[QueryResult::FOUND_ROWS];
     }
 
     /**

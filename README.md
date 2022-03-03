@@ -1,80 +1,10 @@
-[![Logo](http://iceframework.net/resource/img/logo/ice1.jpg)](http://iceframework.net) [Ice](http://iceframework.net) (iceframework.net) 
+[![Logo](http://iceframework.net/resource/img/logo/ice1.jpg)]
 ===
-
-[![Build Status](https://scrutinizer-ci.com/g/ifacesoft/Ice/badges/build.png?b=master)](https://scrutinizer-ci.com/g/ifacesoft/Ice/build-status/master)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/ifacesoft/Ice/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/ifacesoft/Ice/?branch=master)
-[![Code Coverage](https://scrutinizer-ci.com/g/ifacesoft/Ice/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/ifacesoft/Ice/?branch=master)
-
-[![Latest Stable Version](https://poser.pugx.org/ifacesoft/ice/v/stable.svg)](https://packagist.org/packages/ifacesoft/ice)
-[![Total Downloads](https://poser.pugx.org/ifacesoft/ice/downloads.svg)](https://packagist.org/packages/ifacesoft/ice)
-[![Latest Unstable Version](https://poser.pugx.org/ifacesoft/ice/v/unstable.svg)](https://packagist.org/packages/ifacesoft/ice)
-[![License](https://poser.pugx.org/ifacesoft/ice/license.svg)](https://packagist.org/packages/ifacesoft/ice)
 
 Ice is a general purpose PHP-framework.
 You may fully rely on Ice while developing complex web-applications.
 Ice key features are the built-in cache support of the main components,
 flexible configuration and the ability to easily extend existing functionality.
-
-Alternative repository on Bitbacket: [Ice](https://bitbucket.org/dp_ifacesoft/ice) (https://bitbucket.org/dp_ifacesoft/ice)
-
-Quick Start Guide
-=================
-
-Create a composer.json in the directory workspace/MyProject
------------------------------------------------------------
-
-```shell
-mkdir -p workspace/MyProject && cd workspace/MyProject && touch composer.json
-```
-
-workspace - your working directory (logs, caches etc.);
-
-MyProject - the source code of your project
-
-an example file:
-```json
-{
-    "name": "vendor/my-project",
-    "description": "My project with Ice",
-    "type": "project",
-    "require": {
-        "ifacesoft/ice": "1.0.*"
-    },
-    "license": "proprietary",
-    "authors": [
-        {
-            "name": "dp",
-            "email": "denis.a.shestakov@gmail.com"
-        }
-    ],
-    "minimum-stability": "stable",
-    "config": {
-        "vendor-dir": "../_vendor"
-    },
-    "scripts": {
-        "post-install-cmd": [
-            Http
-        ],
-        "post-update-cmd": [
-            Http
-        ]
-    }
-}
-```
-
-Install the project using composer
-----------------------------------
-
-```shell
-curl -sS https://getcomposer.org/installer | php && php composer.phar install --prefer-source
-```
-
-Configure the web server and /etc/hosts
----------------------------------------
-
-After successful installation, use the generated configuration.
-
-Ready! Your project should be available at http://myproject.local 
 
 The basics
 ==========
@@ -195,12 +125,3 @@ Page::getModel(20, '/pk')->remove();
 Page::createQueryBuilder()->getDeleteQuery(20)->getQueryResult();
 ```   
  
-Documentation
-=============
-
-More info on [iceframework.net](http://iceframework.net) such as:
-
-* [Guide](http://iceframework.net/guide)
-* [Api](http://iceframework.net/resource/api/Ice/1.0/)
-
-Good luck! 

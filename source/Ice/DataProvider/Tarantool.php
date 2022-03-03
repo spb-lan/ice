@@ -12,6 +12,7 @@ namespace Ice\DataProvider;
 use Ice\Core\DataProvider;
 use Ice\Core\Debuger;
 use Ice\Core\Exception;
+use Ice\Core\Logger;
 use Ice\Exception\Error;
 use Tarantool\Client\Client;
 use Tarantool\Client\Connection\StreamConnection;
@@ -380,19 +381,27 @@ class Tarantool extends DataProvider
     protected function connect(&$connection)
     {
         $options = $this->getOptions();
-
-        $host = $options->get('host');
-        $port = $options->get('port');
-
-        $streamConnection = new StreamConnection('tcp://' . $host . ':' . $port);
-        $client = new Client($streamConnection, new PurePacker());
+        
+        list($host, $port) = $options->getParams(['host', 'port']);
+        
+        $client = Client::fromDsn('tcp://' . $host . ':' . $port);
 
         $connection = $client->getSpace($this->getIndex());
 
         $isConnected = (boolean)$connection;
 
         if (!$isConnected) {
-            throw new Error('Tarantool not connected');
+            Logger::getInstance(__CLASS__)
+                ->error(
+                    [
+                        'Tarantool failed ({$0} {$1}:{$2})',
+                        [$options->getName(), $host, $port]
+                    ],
+                    __FILE__,
+                    __LINE__
+                );
+            
+            return null;
         }
 
         return $isConnected;

@@ -24,9 +24,8 @@ return [
     ],
     'Ice\Core\Environment' => [
         'environments' => [
-            '/localhost/' => 'development',
-            '/local/' => 'development',
-            '/.*/' => 'development'
+            '/^localhost$/' => 'development',
+            '/^local$/' => 'development',
         ]
     ],
     'Ice\Core\Logger' => [
@@ -34,7 +33,6 @@ return [
     ],
     'Ice\Core\Security' => [
         'defaultClassName' => 'Ice\Security\Ice',
-        'checkRoles' => 1
     ],
     'Ice\Core\Router' => [
         'defaultClassName' => 'Ice\Router\Ice',
@@ -69,7 +67,7 @@ return [
         ]
     ],
     'Ice\Helper\Api_Client_Yandex_Translate' => [
-        'translateKey' => '', //'trnsl.1.1.20150207T134028Z.19bab9f8d9228706.89067e4f90535d4a934a39fbaf284d8af968c9a9'
+        'translateKey' => null, //'trnsl.1.1.20150207T134028Z.19bab9f8d9228706.89067e4f90535d4a934a39fbaf284d8af968c9a9'
     ],
     'defaults' => [
         'Ice\Core\Route' => [

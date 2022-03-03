@@ -4,14 +4,19 @@ use Ice\Core\Environment;
 use Ice\Core\Loader;
 use Ice\Core\Logger;
 use Ice\Core\Module;
+use Ifacesoft\Ice\Core\Infrastructure\Core\Application;
 
 ob_start();
 ob_implicit_flush(false);
 
-define('ICE_VENDOR_NAME', 'ifacesoft/ice');
+define('ICE_VENDOR_NAME', 'lan/ice-fork');
 define('ICE_CONFIG_PATH', 'config/Ice/Core/Module.php');
 define('ICE_RUN_PATH', 'source/run.php');
 define('ICE_BOOTSTRAP_PATH', 'source/bootstrap.php');
+
+if (!defined('STDIN')) define('STDIN', fopen('php://stdin', 'rb'));
+if (!defined('STDOUT')) define('STDOUT', fopen('php://stdout', 'wb'));
+if (!defined('STDERR')) define('STDERR', fopen('php://stderr', 'wb'));
 
 $vendorRealPath = dirname(dirname(dirname(dirname(__DIR__)))) . '/vendor';
 
@@ -47,14 +52,51 @@ if ($iceRealPath = realpath(VENDOR_DIR . ICE_VENDOR_NAME)) {
     define('ICE_DIR', MODULE_DIR);
 }
 
+define('ICE_CORE_DIR', VENDOR_DIR . 'spb-lan/ice-core-fork/');
+
 try {
     global $loader;
 
-    if (empty($loader) ) {
+    if (empty($loader)) {
         $loader = require VENDOR_DIR . 'autoload.php';
     }
 
-    require_once ICE_DIR . 'source/Ice/Helper/Class/Object.php';
+    require_once ICE_DIR . 'source/Ice/Core.php';
+    require_once ICE_DIR . 'source/Ice/Core/DataProvider.php';
+    require_once ICE_DIR . 'source/Ice/DataProvider/Repository.php';
+    require_once ICE_DIR . 'source/Ice/Helper/Config.php';
+    require_once ICE_DIR . 'source/Ice/Core/Loader.php';
+    require_once ICE_DIR . 'source/Ice/Helper/Console.php';
+    require_once ICE_DIR . 'source/Ice/Core/Logger.php';
+    require_once ICE_DIR . 'source/Ice/DataProvider/Registry.php';
+    require_once ICE_DIR . 'source/Ice/Core/Request.php';
+    require_once ICE_DIR . 'source/Ice/Core/Stored.php';
+    require_once ICE_DIR . 'source/Ice/Core/Config.php';
+    require_once ICE_DIR . 'source/Ice/Core/Environment.php';
+    require_once ICE_DIR . 'source/Ice/Helper/Directory.php';
+    require_once ICE_DIR . 'source/Ice/Helper/File.php';
+    require_once ICE_DIR . 'source/Ice/Core/Config.php';
+    require_once ICE_DIR . 'source/Ice/Core/Module.php';
+    require_once ICE_CORE_DIR . 'source/backend/Domain/Value/ValueObject.php';
+    require_once ICE_CORE_DIR . 'source/backend/Domain/Value/StringValue.php';
+    require_once ICE_CORE_DIR . 'source/backend/Domain/Value/ArrayValue.php';
+    require_once ICE_CORE_DIR . 'source/backend/Domain/Value/BooleanValue.php';
+    require_once ICE_CORE_DIR . 'source/backend/Domain/Value/IntegerValue.php';
+    require_once ICE_CORE_DIR . 'source/backend/Domain/Singleton.php';
+    require_once ICE_CORE_DIR . 'source/backend/Domain/Data/Dto.php';
+    require_once ICE_CORE_DIR . 'source/backend/Domain/Data/EmptyDto.php';
+    require_once ICE_CORE_DIR . 'source/backend/Domain/Core/Config.php';
+    require_once ICE_CORE_DIR . 'source/backend/Domain/Core/EmptyConfig.php';
+    require_once ICE_CORE_DIR . 'source/backend/Domain/Core/Module.php';
+    require_once ICE_CORE_DIR . 'source/backend/Domain/Core/Environment.php';
+    require_once ICE_CORE_DIR . 'source/backend/Domain/Exception/Error.php';
+    require_once ICE_CORE_DIR . 'source/backend/Infrastructure/Core/Singleton.php';
+    require_once ICE_CORE_DIR . 'source/backend/Infrastructure/Core/Service.php';
+    require_once ICE_CORE_DIR . 'source/backend/Infrastructure/Core/SingletonService.php';
+    require_once ICE_CORE_DIR . 'source/backend/Infrastructure/Core/Container.php';
+    require_once ICE_CORE_DIR . 'source/backend/Infrastructure/Core/SingletonContainer.php';
+    require_once ICE_CORE_DIR . 'source/backend/Infrastructure/Core/EmptyContainer.php';
+    require_once ICE_CORE_DIR . 'source/backend/Infrastructure/Core/Application.php';
 
     Module::init();
     Environment::getInstance();
@@ -68,10 +110,16 @@ try {
 
     set_error_handler('Ice\Core\Logger::errorHandler');
     register_shutdown_function('Ice\Core\Logger::shutdownHandler');
+
+    Application::getInstance();
 } catch (Exception $e) {
-    echo '<span style="font-weight: bold;">Bootstrapping failed: ' .
-        str_replace(MODULE_DIR, '', $e->getMessage()) .
-        '</span><br>';
+    $message = str_replace(MODULE_DIR, '', $e->getMessage());
+
+    echo '<span style="font-weight: bold;">Bootstrapping failed on ' . \Ice\Core\Request::host() . ': ' . $message . '</span><br>';
+
     echo nl2br(str_replace(MODULE_DIR, '', $e->getTraceAsString()) . "\n");
-    die('Terminated. Bye-bye...' . "\n");
+
+    echo 'Terminated. Bye-bye...' . "\n";
+
+    exit(1);
 }

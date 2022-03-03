@@ -1,4 +1,6 @@
-<?php namespace Ice\Model;
+<?php
+
+namespace Ice\Model;
 
 use Ice\Core\Model;
 
@@ -23,7 +25,7 @@ class Log_Error extends Model
     protected static function config()
     {
         return [
-            'dataSourceKey' => 'Ice\DataSource\Mysqli/default.test',
+            'dataSourceKey' => 'Ice\DataSource\Mysqli/default.moex',
             'scheme' => [
                 'tableName' => 'ice_log_error',
                 'engine' => 'InnoDB',
@@ -99,13 +101,13 @@ class Log_Error extends Model
                         'comment' => '',
                     ],
                     'options' => [
-                        'name' => 'session__fk',
+                        'name' => 'session',
                         'type' => 'text',
                         'validators' => [
                             'Ice:Length_Max' => 64,
                         ],
                     ],
-                    'fieldName' => 'session__fk',
+                    'fieldName' => 'session',
                 ],
                 'logger_class' => [
                     'scheme' => [
@@ -213,9 +215,9 @@ class Log_Error extends Model
                 'request_string' => [
                     'scheme' => [
                         'extra' => '',
-                        'type' => 'varchar(255)',
+                        'type' => 'varchar(511)',
                         'dataType' => 'varchar',
-                        'length' => '255',
+                        'length' => '511',
                         'characterSet' => 'utf8',
                         'nullable' => true,
                         'default' => null,
@@ -311,6 +313,23 @@ class Log_Error extends Model
                         ],
                     ],
                     'fieldName' => 'hostname',
+                ],
+                'user_id' => [
+                    'fieldName' => 'user_id',
+                    'scheme' => [
+                        'extra' => '',
+                        'type' => 'bigint(20)',
+                        'dataType' => 'bigint',
+                        'length' => '19,0',
+                        'characterSet' => null,
+                        'nullable' => true,
+                        'default' => null,
+                        'comment' => '',
+                    ],
+                    'options' => [
+                        'name' => 'user_id',
+                        'type' => 'number',
+                    ],
                 ],
             ],
             'indexes' => [

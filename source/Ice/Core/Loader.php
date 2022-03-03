@@ -106,7 +106,7 @@ class Loader
             $modules = Module::getAll();
         }
 
-        foreach ($modules as $module) {
+        foreach ((array)$modules as $module) {
             $typePathes = $module->gets('pathes/' . $path, []);
 
             if (empty($typePathes)) {
@@ -135,7 +135,7 @@ class Loader
                 if (self::$forceLoading) {
                     return null;
                 } else {
-                    throw new FileNotFound(['Files for {$0} not found', $class], $fullStackPathes);
+                    throw new \Exception('Files for ' . $class . ' not found: ' . print_r($fullStackPathes, true));
                 }
             }
         }

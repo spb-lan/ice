@@ -6,6 +6,7 @@
  * @copyright Copyright (c) 2014 Ifacesoft | dp <denis.a.shestakov@gmail.com>
  * @license   https://github.com/ifacesoft/Ice/blob/master/LICENSE.md
  */
+
 namespace Ice\Core;
 
 use Ice\Helper\Http;
@@ -71,14 +72,6 @@ class Response
     }
 
     /**
-     * @param null $content
-     */
-    public function setContent($content)
-    {
-        $this->content = $content;
-    }
-
-    /**
      * @param null $error
      */
     public function setError($error)
@@ -99,31 +92,36 @@ class Response
      *
      * @param array $result
      *
-     * @author dp <denis.a.shestakov@gmail.com>
-     *
+     * @throws \Exception
      * @version 0.4
      * @since   0.0
-     * @throws \Exception
+     * @author dp <denis.a.shestakov@gmail.com>
+     *
      */
     public function send(array $result)
     {
         $redirectUrl = isset($result['redirect']) ? $result['redirect'] : null;
 
-        if ($redirectUrl && !Request::isAjax()) {
+        $isRedirect = $redirectUrl && in_array((int)$this->statusCode, [301, 302]);
+
+        if ($isRedirect && !Request::isAjax()) {
             if (headers_sent()) {
                 echo '<script type="text/javascript">location.href="' . $redirectUrl . '"</script>';
                 return;
             }
 
-            $this->statusCode = 302; // todo: обязательно должен быть код редиректа (Иначе апач игнорирует хедер локейшн)
-
             Http::setHeader('Location: ' . $redirectUrl, $this->statusCode);
-            
+
             return;
         }
 
+        if ($contentType = Request::getParam('contentType')) {
+            $this->contentType = $contentType;
+        }
+
         if ($this->content === null) {
-            $this->content = $this->contentType == 'json' || Request::isAjax()
+
+            $this->content = $this->contentType === 'json' || Request::isAjax()
                 ? str_replace(dirname(MODULE_DIR), '', Json::encode($result))
                 : str_replace(dirname(MODULE_DIR), '', reset($result));
         }
@@ -134,26 +132,11 @@ class Response
             Http::setHeader(Http::getContentTypeHeader($this->contentType));
         }
 
-        if ($this->statusCode) {
+        if ($this->statusCode && (!Request::isAjax() || !$isRedirect)) {
             Http::setStatusCodeHeader($this->statusCode);
         }
 
         echo is_array($this->content) ? Json::encode($this->content) : $this->content;
-    }
-
-    /**
-     * Set content type for response
-     *
-     * @param string $contentType
-     *
-     * @author dp <denis.a.shestakov@gmail.com>
-     *
-     * @version 0.4
-     * @since   0.4
-     */
-    public function setContentType($contentType)
-    {
-        $this->contentType = $contentType;
     }
 
     /**
@@ -174,6 +157,39 @@ class Response
     }
 
     /**
+     * @return string
+     */
+    public function getContentType()
+    {
+        return $this->contentType;
+    }
+
+    /**
+     * Set content type for response
+     *
+     * @param string $contentType
+     *
+     * @author dp <denis.a.shestakov@gmail.com>
+     *
+     * @version 0.4
+     * @since   0.4
+     */
+    public function setContentType($contentType)
+    {
+        $this->contentType = $contentType;
+
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getStatusCode()
+    {
+        return (int)$this->statusCode;
+    }
+
+    /**
      * Set status code for response
      *
      * @param string $statusCode
@@ -185,23 +201,9 @@ class Response
      */
     public function setStatusCode($statusCode)
     {
-        $this->statusCode = $statusCode;
-    }
+        $this->statusCode = (int)$statusCode;
 
-    /**
-     * @return string
-     */
-    public function getContentType()
-    {
-        return $this->contentType;
-    }
-
-    /**
-     * @return string
-     */
-    public function getStatusCode()
-    {
-        return $this->statusCode;
+        return $this;
     }
 
     /**
@@ -210,5 +212,15 @@ class Response
     public function getContent()
     {
         return $this->content;
+    }
+
+    /**
+     * @param null $content
+     */
+    public function setContent($content)
+    {
+        $this->content = $content;
+
+        return $this;
     }
 }

@@ -2,13 +2,16 @@
 
 namespace Ice\Core;
 
+use Ice\Exception\Config_Error;
 use Ice\Exception\Error;
-use Ice\Exception\Security_User_NotActive;
-use Ice\Model\User;
+use Ice\Exception\FileNotFound;
 use Ice\Exception\Security_Account_AttachForbidden;
+use Ice\Exception\Security_Account_NotFound;
+use Ice\Exception\Security_User_NotActive;
+use Ice\Exception\Security_User_NotFound;
 use Ice\Helper\Date;
-use Ice\Helper\Type_String;
 use Ice\Model\Token;
+use Ice\Model\User;
 use Ice\Widget\Account_Form;
 
 abstract class Model_Account extends Model
@@ -24,14 +27,16 @@ abstract class Model_Account extends Model
         /** @var Model_Account $accountModelClass */
         $accountModelClass = get_class($this);
 
-        /** @var DataSource $dataSource */
         $dataSource = $accountModelClass::getDataSource();
 
         try {
             $dataSource->beginTransaction();
 
-            // todo: должно работать в зависимости от конфиг (см. prolongate)
-            $this->registerConfirm($accountForm, $this->signUpAccount($accountForm, $this->signUpUser($accountForm, $container), $container), $container);
+            $this->signUpAccount($accountForm, $this->signUpUser($accountForm, $container), $container);
+
+            if ($this->isConfirmed($accountForm) === false && $accountForm->isConfirm()) { // именно в такой послеовательности
+                $this->sendConfirmToken($accountForm, $this->getConfirmToken($accountForm));
+            }
 
             $dataSource->commitTransaction();
         } catch (\Exception $e) {
@@ -42,51 +47,6 @@ abstract class Model_Account extends Model
 
         return $this;
     }
-
-    /**
-     * @param array $values
-     * @return array
-     */
-    abstract public function registerVerify(array $values);
-
-    /**
-     * @param Account_Form $accountForm
-     * @param Model_Account $account
-     * @throws Exception
-     */
-    private function registerConfirm(Account_Form $accountForm, Model_Account $account, $container = [])
-    {
-        if ($accountForm->isConfirm()) {
-            $token = isset($container['token'])
-                ? $container['token']
-                : Token::create(['/data' => []]);
-
-            $token->set(['/' => md5(Type_String::getRandomString()),
-                '/expired' => $accountForm->getConfirmationExpired(),
-                'modelClass' => get_class($account),
-                '/data' => array_merge(
-                    [
-                        'function' => __FUNCTION__,
-                        'account' => $account->get(),
-                        'account_expired' => $accountForm->getExpired()
-                    ],
-                    $token->get('/data'))
-            ]);
-
-            $account->set([
-                'token' => $token->save()
-            ])->save();
-
-            $this->sendRegisterConfirm($accountForm, $account->get(Token::class));
-        }
-    }
-
-    /**
-     * @param Account_Form $accountForm
-     * @param Token $token
-     * @return mixed
-     */
-    abstract protected function sendRegisterConfirm(Account_Form $accountForm, Token $token);
 
     /**
      * @param Account_Form $accountForm
@@ -127,9 +87,9 @@ abstract class Model_Account extends Model
      * @param Account_Form $accountForm
      * @param array $container
      * @return Model|User
+     * @throws Error
      * @throws Exception
      * @throws Security_Account_AttachForbidden
-     * @throws \Ice\Exception\FileNotFound
      */
     private function signUpUser(Account_Form $accountForm, array $container = [])
     {
@@ -143,7 +103,7 @@ abstract class Model_Account extends Model
 
         if ($user) {
             if (!$accountForm->isAttachAccount()) {
-                throw new Security_Account_AttachForbidden('Attach account forbidden');
+                throw new Security_Account_AttachForbidden('Attach account forbidden', ['user' => $user]);
             }
 
             if ($accountForm->isUpdateUserDataOnAttachAccount()) {
@@ -154,6 +114,7 @@ abstract class Model_Account extends Model
                 if (empty($userData['/email'])) {
                     throw new Error('Empty email for attach');
                 }
+
                 return $user->set(['/email' => $userData['/email'], '/login' => $userData['/email']])->save();
             }
 
@@ -167,6 +128,7 @@ abstract class Model_Account extends Model
      * @param Account_Form $accountForm
      * @param array $container
      * @return array
+     * @throws \Exception
      */
     private function getCommonUserData(Account_Form $accountForm, array $container = [])
     {
@@ -197,64 +159,75 @@ abstract class Model_Account extends Model
     abstract protected function getUserData(Account_Form $accountForm, array $container = []);
 
     /**
-     * @param Account_Form $accountForm
-     * @param null $dataSourceKey
-     * @return mixed
-     * @throws Exception
+     * @param Account_Form|null $accountForm
+     * @return bool
      */
-    final public function signIn(Account_Form $accountForm, $dataSourceKey = null)
+    abstract protected function isConfirmed(Account_Form $accountForm = null);
+
+    /**
+     * @param Account_Form $accountForm
+     * @param Token $token
+     * @return mixed
+     */
+    abstract protected function sendConfirmToken(Account_Form $accountForm, Token $token);
+
+    /**
+     * @param Account_Form $accountForm
+     * @return Token
+     */
+    abstract protected function getConfirmToken(Account_Form $accountForm);
+
+    /**
+     * @param Account_Form $accountForm
+     * @return array
+     */
+    abstract public function registerVerify(Account_Form $accountForm);
+
+    /**
+     * @param Account_Form $accountForm
+     * @return mixed
+     * @throws Error
+     * @throws Exception
+     * @throws Security_User_NotActive
+     * @throws Config_Error
+     * @throws FileNotFound
+     * @throws Security_Account_NotFound
+     */
+    final public function signIn(Account_Form $accountForm)
     {
-        /** @var Logger $logger */
         $logger = $accountForm->getLogger();
 
-        $user = $this->getUser($dataSourceKey);
+        $user = $this->getUser();
 
         if (!$user) {
-//            file_put_contents(\getLogDir() . $this->getPkValue() . '.user.debug.log',print_r([$accountForm, $this, $this->getUser()], true) . "\n\n\n", FILE_APPEND);
-            $logger->exception('User not found', __FILE__, __LINE__);
-        } elseif (!$user->isActive()) {
-            $logger->info('User is not active', Logger::DANGER, true);
-            throw new Security_User_NotActive('User is not active');
+            throw new Security_User_NotFound('User not found', $this->get());
+        }
+
+        if (!$user->isActive()) {
+            throw new Security_User_NotActive('User not active', $this->get());
         }
 
         $this->autoProlongate($accountForm);
 
-        try {
-            $user->set(['last_login' => Date::get()])->save();
-        } catch (\Exception $e) {
-        } catch (\Throwable $e) {
-        }
+        $user
+            ->set(['/logined_at' => Date::get()])
+            ->save();
 
-        return Security::getInstance()->login($this, $dataSourceKey);
+        return Security::getInstance()->login($this, $accountForm->get());
     }
 
     /**
-     * @return mixed
-     * @throws \Ice\Core\Exception
+     * @return Model|Model_Account|null
      */
-    final public function signOut()
+    public function getUser()
     {
-//        $user = $this->getUser();
-
-//        $user->set(['last_login' => Date::get()])->save();
-
-        return Security::getInstance()->logout();
+        return $this->fetchOne(User::class, '*', true, -1);
     }
 
-    /**
-     * @param null $dataSourceKey
-     * @return User|Model
-     */
-    public function getUser($dataSourceKey = null)
+    public function isActive()
     {
-        return $this->fetchOne(User::class, '*', true, -1, $dataSourceKey);
+        return (bool)$this->get('/active');
     }
-
-    /**
-     * @param array $values
-     * @return array
-     */
-    abstract public function loginVerify(array $values);
 
     /**
      * @param Account_Form $accountForm
@@ -283,10 +256,11 @@ abstract class Model_Account extends Model
      *
      * @return bool
      * @throws Exception
+     * @throws \Exception
      */
     public function isExpired()
     {
-        return strtotime($this->getExpiredAt()) < time();
+        return Date::expired($this->getExpiredAt());
     }
 
     /**
@@ -295,8 +269,23 @@ abstract class Model_Account extends Model
      */
     public function getExpiredAt()
     {
-        return $this->getUser()->get('/expired_at');
+        return $this->get('/expired_at');
     }
 
     abstract public function prolongate($expired);
+
+    /**
+     * @return mixed
+     * @throws Exception
+     */
+    final public function signOut()
+    {
+        return Security::getInstance()->logout();
+    }
+
+    /**
+     * @param Account_Form $accountForm
+     * @return array
+     */
+    abstract public function loginVerify(Account_Form $accountForm);
 }

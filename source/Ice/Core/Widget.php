@@ -2,27 +2,29 @@
 
 namespace Ice\Core;
 
+use Ice\Action\Render as Action_Render;
+use Ice\App;
 use Ice\Exception\Access_Denied;
-use Ice\Exception\Access_Denied_Security;
+use Ice\Exception\Config_Error;
+use Ice\Exception\Error;
 use Ice\Exception\FileNotFound;
 use Ice\Exception\Http;
 use Ice\Exception\Http_Forbidden;
 use Ice\Exception\RouteNotFound;
 use Ice\Helper\Access;
+use Ice\Helper\Class_Object;
 use Ice\Helper\Input;
 use Ice\Helper\Json;
-use Ice\Helper\Class_Object;
-use Ice\Helper\Type_String;
 use Ice\Helper\Transliterator;
+use Ice\Helper\Type_String;
 use Ice\Widget\Form;
 use Ice\Widget\Resource_Dynamic;
+use Ice\WidgetComponent\Alert as WidgetComponent_Alert;
 use Ice\WidgetComponent\FormElement_Button;
 use Ice\WidgetComponent\HtmlTag;
 use Ice\WidgetComponent\HtmlTag_A;
 use Ice\WidgetComponent\Special;
 use Ice\WidgetComponent\Widget as WidgetComponent_Widget;
-use Ice\WidgetComponent\Alert as WidgetComponent_Alert;
-use Ice\Action\Render as Action_Render;
 
 abstract class Widget extends Container
 {
@@ -128,7 +130,7 @@ abstract class Widget extends Container
                 (array)$this->build($this->get())
             );
 
-        } catch (Http_Forbidden $e) {
+        } catch (Access_Denied $e) {
 //            Logger::getInstance(__CLASS__)->error(['Widget {$0} access denied', $widgetClass], __FILE__, __LINE__, $e);
             $this->setTemplateClass('Ice\Widget\Blank');
 
@@ -142,31 +144,6 @@ abstract class Widget extends Container
         } finally {
             Profiler::setPoint($key, $startTime, $startMemory);
         }
-    }
-
-    /**
-     * @param $data
-     * @throws Exception
-     * @throws \Ice\Exception\Config_Error
-     * @throws FileNotFound
-     */
-    protected function init($data)
-    {
-        /** @var Widget $widgetClass */
-        $widgetClass = get_class($this);
-
-        $this->set(Input::get($widgetClass::getConfig()->gets('input', []), $data, $widgetClass));
-    }
-
-    /**
-     * @param string $style
-     * @return Widget
-     */
-    public function setStyle($style)
-    {
-        $this->style = $style;
-
-        return $this;
     }
 
     /**
@@ -219,6 +196,20 @@ abstract class Widget extends Container
         }
 
         return $this;
+    }
+
+    /**
+     * @param $data
+     * @throws Exception
+     * @throws Config_Error
+     * @throws FileNotFound
+     */
+    protected function init($data)
+    {
+        /** @var Widget $widgetClass */
+        $widgetClass = get_class($this);
+
+        $this->set(Input::get($widgetClass::getConfig()->gets('input', []), $data, $widgetClass));
     }
 
     /**
@@ -327,8 +318,8 @@ abstract class Widget extends Container
      * @param null $default
      * @return mixed
      * @throws Exception
-     * @throws \Ice\Exception\Config_Error
-     * @throws \Ice\Exception\Error
+     * @throws Config_Error
+     * @throws Error
      * @throws FileNotFound
      */
     public function get($paramName = null, $default = null)
@@ -392,6 +383,52 @@ abstract class Widget extends Container
     }
 
     /**
+     * Build a tag part
+     *
+     * @param  $columnName
+     * @param array $options
+     * @param null $template
+     * @return $this
+     * @throws Exception
+     */
+    public function alert($columnName, array $options = [], $template = null)
+    {
+        return $this->addPart(new WidgetComponent_Alert($columnName, $options, $template, $this));
+    }
+
+    /**
+     * @param WidgetComponent $part
+     * @return $this
+     * @throws Exception
+     */
+    protected function addPart(WidgetComponent $part)
+    {
+        if (!$part->getOption('isShow', true)) {
+            return $this;
+        }
+
+        $access = $part->getOption('access', ['roles' => []]);
+
+        if ($access['roles'] && !Security::getInstance()->check((array)$access['roles'])) {
+            return $this;
+        }
+
+        $componentName = $part->getComponentName();
+
+        if (!empty($options['rewrite']) && isset($this->parts[$componentName])) {
+            unset($this->parts[$componentName]);
+        }
+
+        if (!empty($options['unshift'])) {
+            $this->parts = [$componentName => $part] + $this->parts;
+        } else {
+            $this->parts[$componentName] = $part;
+        }
+
+        return $this;
+    }
+
+    /**
      * Widget config
      *
      * @return array
@@ -414,17 +451,14 @@ abstract class Widget extends Container
     }
 
     /**
-     * @param $name
-     * @param null $default
-     * @return mixed
+     * @param string $style
+     * @return Widget
      */
-    public function getOption($name = null, $default = null)
+    public function setStyle($style)
     {
-        if ($name === null) {
-            return $this->options;
-        }
+        $this->style = $style;
 
-        return array_key_exists($name, $this->options) ? $this->options[$name] : $default;
+        return $this;
     }
 
     /**
@@ -556,10 +590,12 @@ abstract class Widget extends Container
     }
 
     /**
-     * @param string $templateClass
+     * @param null $templateClass
      *
      * @return $this
+     * @throws Config_Error
      * @throws Exception
+     * @throws FileNotFound
      * @todo: Написать обработчик (init) конфига, где будет отдельный вызов setTemplateClass
      */
     public function setTemplateClass($templateClass = null)
@@ -701,14 +737,6 @@ abstract class Widget extends Container
         return $this;
     }
 
-    /**
-     * @return array
-     */
-    public function getFilterParts()
-    {
-        return $this->filterParts;
-    }
-
     //    /**
 //     * @param array $params
 //     * @return Widget_Data
@@ -740,12 +768,12 @@ abstract class Widget extends Container
 //        return $this;
 //    }
 
-    private function getWidgetClassName()
+    /**
+     * @return array
+     */
+    public function getFilterParts()
     {
-        /** @var Widget $widgetClass */
-        $widgetClass = get_class($this);
-
-        return $widgetClass::getClassName();
+        return $this->filterParts;
     }
 
 //    /**
@@ -784,6 +812,14 @@ abstract class Widget extends Container
 //
 //        return $values;
 //    }
+
+    private function getWidgetClassName()
+    {
+        /** @var Widget $widgetClass */
+        $widgetClass = get_class($this);
+
+        return $widgetClass::getClassName();
+    }
 
     /**
      * @return null
@@ -909,59 +945,13 @@ abstract class Widget extends Container
      *
      * @param  $columnName
      * @param array $options
-     * @param string $template
+     * @param null $template
      * @return $this
      * @throws Exception
      */
     public function a($columnName, array $options = [], $template = null)
     {
         return $this->addPart(new HtmlTag_A($columnName, $options, $template, $this));
-    }
-
-    /**
-     * Build a tag part
-     *
-     * @param  $columnName
-     * @param array $options
-     * @param string $template
-     * @return $this
-     * @throws Exception
-     */
-    public function alert($columnName, array $options = [], $template = null)
-    {
-        return $this->addPart(new WidgetComponent_Alert($columnName, $options, $template, $this));
-    }
-
-    /**
-     * @param WidgetComponent $part
-     * @return $this
-     * @throws Exception
-     */
-    protected function addPart(WidgetComponent $part)
-    {
-        if (!$part->getOption('isShow', true)) {
-            return $this;
-        }
-
-        $access = $part->getOption('access', ['roles' => []]);
-
-        if ($access['roles'] && !Security::getInstance()->check((array)$access['roles'])) {
-            return $this;
-        }
-
-        $componentName = $part->getComponentName();
-
-        if (!empty($options['rewrite']) && isset($this->parts[$componentName])) {
-            unset($this->parts[$componentName]);
-        }
-
-        if (!empty($options['unshift'])) {
-            $this->parts = [$componentName => $part] + $this->parts;
-        } else {
-            $this->parts[$componentName] = $part;
-        }
-
-        return $this;
     }
 
     /**
@@ -983,7 +973,7 @@ abstract class Widget extends Container
      *
      * @param  $columnName
      * @param array $options
-     * @param string $template
+     * @param null $template
      * @return $this $this_Data
      * @throws Exception
      */
@@ -1065,7 +1055,7 @@ abstract class Widget extends Container
     /**
      * @param $scope
      * @param array $data
-     * @param Widget|string $widgetClass
+     * @param null $widgetClass
      * @return $this
      * @throws Exception
      */
@@ -1093,20 +1083,20 @@ abstract class Widget extends Container
      * @return $this
      * @throws Exception
      */
-    public function setRedirect($route, $timeout = 0)
+    public function setRedirect($routeOptions, $timeout = 0)
     {
-        if (is_array($route)) {
-            list($route, $params) = $route;
+        if (is_array($routeOptions)) {
+            list($route, $params, $urlWithGet, $urlWithDomain, $replaceContext) = array_pad((array)$routeOptions, 5, false);
         } else {
-            $params = [];
+            list($route, $params, $urlWithGet, $urlWithDomain, $replaceContext) = [$routeOptions, [], null, null, null];
         }
 
         try {
             $this->redirect = $route === true
-                ? Router::getInstance()->getUrl([null, $params])
-                : Router::getInstance()->getUrl([$route, $params]);
-        } catch (
-        RouteNotFound $e) {
+                ? Router::getInstance()->getUrl([null, $params, $urlWithGet, $urlWithDomain, $replaceContext])
+                : Router::getInstance()->getUrl([$route, $params, $urlWithGet, $urlWithDomain, $replaceContext]);
+            App::getResponse()->setStatusCode(302);
+        } catch (RouteNotFound $e) {
             $this->redirect = $route;
         }
 
@@ -1171,33 +1161,19 @@ abstract class Widget extends Container
             return $widgetClass;
         }
 
-        $widgetClass = (array)$widgetClass;
+        list($widgetClass, $widgetParams, $instanceKey) = array_pad((array)$widgetClass, 3, null);
 
-        if (count($widgetClass) == 3) {
-            list($widgetClass, $widgetParams, $instanceKey) = $widgetClass;
-        } else if (count($widgetClass) == 2) {
-            list($widgetClass, $widgetParams) = $widgetClass;
-            $instanceKey = null;
-        } else {
-            $widgetClass = reset($widgetClass);
-            $widgetParams = [];
-            $instanceKey = null;
-        }
+        $widgetParams = (array)$widgetParams;
 
-        $key = null;
-
-        if (!$instanceKey || $instanceKey[0] == '_') {
+        if (!$instanceKey || $instanceKey[0] === '_') {
             $key = strtolower(Class_Object::getClassName(get_class($this)));
 
-            if ($instanceKey && $instanceKey[0] == '_') {
+            if ($instanceKey && $instanceKey[0] === '_') {
                 $key .= $instanceKey;
             }
         } else {
             $key = $instanceKey;
         }
-
-        /** @var Widget $widget */
-        $widget = null;
 
         $widgetParams['parentWidgetId'] = $this->getInstanceKey();
         $widgetParams['parentWidgetClass'] = get_class($this);
@@ -1208,6 +1184,7 @@ abstract class Widget extends Container
             ? get_class($this) . $widgetClass
             : Widget::getClass($widgetClass);
 
+         /** @var Widget $widget */
         $widget = $widgetClass::getInstance($key . $postfixKey, null, $widgetParams);
 //        } catch (\Exception $e) {
 //            //todo: заменять на виджет сообщения об ошибке
@@ -1264,6 +1241,20 @@ abstract class Widget extends Container
     }
 
     /**
+     * @param $name
+     * @param null $default
+     * @return mixed
+     */
+    public function getOption($name = null, $default = null)
+    {
+        if ($name === null) {
+            return $this->options;
+        }
+
+        return array_key_exists($name, $this->options) ? $this->options[$name] : $default;
+    }
+
+    /**
      * @return null
      */
     public function getParentWidgetClass()
@@ -1291,7 +1282,7 @@ abstract class Widget extends Container
      * @param null $default
      * @return mixed
      * @throws Exception
-     * @throws \Ice\Exception\Error
+     * @throws Error
      * @throws FileNotFound
      */
     public function getAll($paramName = null, $default = null)

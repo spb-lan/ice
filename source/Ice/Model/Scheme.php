@@ -1,4 +1,6 @@
-<?php namespace Ice\Model;
+<?php
+
+namespace Ice\Model;
 
 use Ice\Core\Model;
 
@@ -74,9 +76,9 @@ class Scheme extends Model
                 'table__json' => [
                     'scheme' => [
                         'extra' => '',
-                        'type' => 'varchar(1023)',
-                        'dataType' => 'varchar',
-                        'length' => '1023',
+                        'type' => 'longtext',
+                        'dataType' => 'longtext',
+                        'length' => '4294967295',
                         'characterSet' => 'utf8',
                         'nullable' => false,
                         'default' => '[]',
@@ -116,9 +118,9 @@ class Scheme extends Model
                 'references__json' => [
                     'scheme' => [
                         'extra' => '',
-                        'type' => 'varchar(1023)',
-                        'dataType' => 'varchar',
-                        'length' => '1023',
+                        'type' => 'longtext',
+                        'dataType' => 'longtext',
+                        'length' => '4294967295',
                         'characterSet' => 'utf8',
                         'nullable' => false,
                         'default' => '[]',
@@ -137,9 +139,9 @@ class Scheme extends Model
                 'indexes__json' => [
                     'scheme' => [
                         'extra' => '',
-                        'type' => 'varchar(1023)',
-                        'dataType' => 'varchar',
-                        'length' => '1023',
+                        'type' => 'longtext',
+                        'dataType' => 'longtext',
+                        'length' => '4294967295',
                         'characterSet' => 'utf8',
                         'nullable' => false,
                         'default' => '[]',

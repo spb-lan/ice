@@ -2,7 +2,9 @@
 
 namespace Ice\Model;
 
+use Ice\Core\Exception;
 use Ice\Core\Model;
+use Ice\Helper\Date;
 
 /**
  * Class User
@@ -20,7 +22,7 @@ use Ice\Core\Model;
  *
  * @package Ice\Model
  */
-class User extends Model
+final class User extends Model
 {
     protected static function config()
     {
@@ -30,7 +32,7 @@ class User extends Model
                 'tableName' => 'ice_user',
                 'engine' => 'InnoDB',
                 'charset' => 'utf8_general_ci',
-                'comment' => '',
+                'comment' => 'Пользователи',
             ],
             'columns' => [
                 'user_pk' => [
@@ -47,42 +49,6 @@ class User extends Model
                     'fieldName' => 'user_pk',
                     'Ice\Widget\Model_Form' => 'Field_Number',
                     'Ice\Core\Validator' => [],
-                    'Ice\Widget\Model_Table' => 'text',
-                ],
-                'user_phone' => [
-                    'scheme' => [
-                        'extra' => '',
-                        'type' => 'varchar(11)',
-                        'dataType' => 'varchar',
-                        'length' => '11',
-                        'characterSet' => 'utf8',
-                        'nullable' => false,
-                        'default' => null,
-                        'comment' => '',
-                    ],
-                    'fieldName' => 'user_phone',
-                    'Ice\Widget\Model_Form' => 'Field_Text',
-                    'Ice\Core\Validator' => [
-                        'Ice:Length_Max' => 11,
-                    ],
-                    'Ice\Widget\Model_Table' => 'text',
-                ],
-                'user_email' => [
-                    'scheme' => [
-                        'extra' => '',
-                        'type' => 'varchar(255)',
-                        'dataType' => 'varchar',
-                        'length' => '255',
-                        'characterSet' => 'utf8',
-                        'nullable' => false,
-                        'default' => null,
-                        'comment' => '',
-                    ],
-                    'fieldName' => 'user_email',
-                    'Ice\Widget\Model_Form' => 'Field_Text',
-                    'Ice\Core\Validator' => [
-                        'Ice:Length_Max' => 255,
-                    ],
                     'Ice\Widget\Model_Table' => 'text',
                 ],
                 'user_name' => [
@@ -110,7 +76,7 @@ class User extends Model
                         'dataType' => 'varchar',
                         'length' => '255',
                         'characterSet' => 'utf8',
-                        'nullable' => false,
+                        'nullable' => true,
                         'default' => null,
                         'comment' => '',
                     ],
@@ -128,7 +94,7 @@ class User extends Model
                         'dataType' => 'varchar',
                         'length' => '255',
                         'characterSet' => 'utf8',
-                        'nullable' => false,
+                        'nullable' => true,
                         'default' => null,
                         'comment' => '',
                     ],
@@ -142,12 +108,12 @@ class User extends Model
                 'user_active' => [
                     'scheme' => [
                         'extra' => '',
-                        'type' => 'tinyint(4)',
+                        'type' => 'tinyint(1)',
                         'dataType' => 'tinyint',
                         'length' => '3,0',
                         'characterSet' => null,
                         'nullable' => false,
-                        'default' => '1',
+                        'default' => '0',
                         'comment' => '',
                     ],
                     'fieldName' => 'user_active',
@@ -157,7 +123,39 @@ class User extends Model
                     ],
                     'Ice\Widget\Model_Table' => 'text',
                 ],
-                'user_created' => [
+                'user_logined_at' => [
+                    'scheme' => [
+                        'extra' => '',
+                        'type' => 'datetime',
+                        'dataType' => 'datetime',
+                        'length' => '0',
+                        'characterSet' => null,
+                        'nullable' => true,
+                        'default' => null,
+                        'comment' => '',
+                    ],
+                    'fieldName' => 'user_logined_at',
+                    'Ice\Widget\Model_Form' => 'Field_Date',
+                    'Ice\Core\Validator' => [],
+                    'Ice\Widget\Model_Table' => 'text',
+                ],
+                'user_expired_at' => [
+                    'scheme' => [
+                        'extra' => '',
+                        'type' => 'datetime',
+                        'dataType' => 'datetime',
+                        'length' => '0',
+                        'characterSet' => null,
+                        'nullable' => false,
+                        'default' => '1970-01-01 00:00:00',
+                        'comment' => '',
+                    ],
+                    'fieldName' => 'user_expired_at',
+                    'Ice\Widget\Model_Form' => 'Field_Date',
+                    'Ice\Core\Validator' => [],
+                    'Ice\Widget\Model_Table' => 'text',
+                ],
+                'user_created_at' => [
                     'scheme' => [
                         'extra' => '',
                         'type' => 'timestamp',
@@ -168,7 +166,23 @@ class User extends Model
                         'default' => 'CURRENT_TIMESTAMP',
                         'comment' => '',
                     ],
-                    'fieldName' => 'user_created',
+                    'fieldName' => 'user_created_at',
+                    'Ice\Widget\Model_Form' => 'Field_Date',
+                    'Ice\Core\Validator' => [],
+                    'Ice\Widget\Model_Table' => 'text',
+                ],
+                'user_updated_at' => [
+                    'scheme' => [
+                        'extra' => 'on update current_timestamp()',
+                        'type' => 'timestamp',
+                        'dataType' => 'timestamp',
+                        'length' => '0',
+                        'characterSet' => null,
+                        'nullable' => false,
+                        'default' => 'CURRENT_TIMESTAMP',
+                        'comment' => '',
+                    ],
+                    'fieldName' => 'user_updated_at',
                     'Ice\Widget\Model_Form' => 'Field_Date',
                     'Ice\Core\Validator' => [],
                     'Ice\Widget\Model_Table' => 'text',
@@ -181,37 +195,41 @@ class User extends Model
                     ],
                 ],
                 'FOREIGN KEY' => [],
-                'UNIQUE' => [],
+                'UNIQUE' => [
+                    'UNIQUE' => [],
+                ],
+            ],
+            'relations' => [
+                'manyToOne' => [
+                    'Ice\Model\Token' => 'user__fk',
+                ],
+                'manyToMany' => [],
+                'oneToMany' => [],
             ],
             'references' => [],
-            'relations' => [
-                'oneToMany' => [],
-                'manyToOne' => [],
-                'manyToMany' => [],
-            ],
             'revision' => '05201942_5yc',
             'modelClass' => 'Ice\Model\User',
             'moduleAlias' => 'Ice',
         ];
     }
 
-    public function getTimezone()
-    {
-        if ($timezone = $this->get('timezone', false)) {
-            return $timezone;
-        }
-
-        return Module::getInstance()->getDefault('date')->get('client_timezone');
-    }
-
     /**
      * Check is active user
      *
      * @return bool
-     * @throws \Ice\Core\Exception
+     * @throws Exception
      */
     public function isActive()
     {
-        return (bool)$this->get('/active', 0);
+        return (bool)$this->get('/active');
+    }
+
+    /**
+     * @return bool
+     * @throws Exception
+     */
+    public function isExpired()
+    {
+        return Date::expired($this->get('/expired_at'));
     }
 }

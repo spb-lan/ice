@@ -2,40 +2,29 @@
 
 namespace Ice\Router;
 
-use Ice\Core\Debuger;
+use Ice\Core\Exception;
 use Ice\Core\Request;
 use Ice\Core\Route;
 use Ice\Core\Router;
 use Ice\DataProvider\Router as DataProvider_Router;
+use Ice\Exception\RouteNotFound;
 
 class Ice extends Router
 {
     /**
-     * @param null $routeName
+     * @param null $routeOptions
      * @param bool $force
      * @return null|string
+     * @throws Exception
+     * @throws RouteNotFound
      */
-    public function getUrl($routeName = null, $force = false)
+    public function getUrl($routeOptions = null, $force = false)
     {
-        if (!$routeName) {
-            $routeName = $this->getName();
+        if (!$routeOptions) {
+            $routeOptions = $this->getName();
         }
 
-        $routeName = (array)$routeName;
-
-        $routeParams = [];
-        $urlWithGet = false;
-        $urlWithDomain = false;
-
-        if (count($routeName) == 4) {
-            list($routeName, $routeParams, $urlWithGet, $urlWithDomain) = $routeName;
-        } elseif (count($routeName) == 3) {
-            list($routeName, $routeParams, $urlWithGet) = $routeName;
-        } elseif (count($routeName) == 2) {
-            list($routeName, $routeParams) = $routeName;
-        } else {
-            $routeName = reset($routeName);
-        }
+        list($routeName, $routeParams, $urlWithGet, $urlWithDomain, $replaceContext) = array_pad((array)$routeOptions, 5, false);
 
         $url = Route::getInstance($routeName)->getUrl((array)$routeParams);
 
@@ -45,6 +34,12 @@ class Ice extends Router
 
         if (!$urlWithGet) {
             $url = strtok($url, '?');
+        }
+
+        if (is_array($replaceContext)) {
+            foreach ($replaceContext as $search => $replace) {
+                $url = str_replace($search, $replace, $url);
+            }
         }
 
         if ($urlWithDomain) {
@@ -78,7 +73,7 @@ class Ice extends Router
     /**
      * @param bool $force
      * @return array
-     * @throws \Ice\Core\Exception
+     * @throws Exception
      * @throws \Ice\Exception\Error
      */
     public function getParams($force = false)

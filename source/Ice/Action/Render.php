@@ -4,6 +4,7 @@ namespace Ice\Action;
 
 use Ice\Core\Action;
 use Ice\Core\Debuger;
+use Ice\Core\Exception;
 use Ice\Core\Widget;
 use Ice\DataProvider\Request;
 use Ice\Exception\Access_Denied;
@@ -36,7 +37,7 @@ class Render extends Action
      * @param  array $input
      * @return array
      * @throws Http_Forbidden
-     * @throws \Ice\Core\Exception
+     * @throws Exception
      */
     public function run(array $input)
     {
@@ -51,10 +52,22 @@ class Render extends Action
             }
 
             try {
+                if (is_array($widgetClass)) {
+                    list($widgetClass, $config) = array_pad($widgetClass, 2, []);
+                }
+
                 /** @var Widget $widgetClass */
                 $widgetClass = Widget::getClass($widgetClass);
 
-                return ['content' => $widgetClass::getInstance(null, null, $params)];
+                
+                $widget = $widgetClass::getInstance(null, null, $params);
+                
+                if (isset($config['render']['template'])) {
+                    $widget->setTemplateClass($config['render']['template']);
+                }
+
+                return ['content' => $widget->render()];
+//                return ['content' => \Minify_HTML::minify($widget->render())];
             } catch (Access_Denied $e) {
                 throw new Http_Forbidden('В доступе отказано', [], $e);
             }

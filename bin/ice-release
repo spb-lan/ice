@@ -1,0 +1,5 @@
+#!/bin/sh
+
+cd $(dirname $(dirname $(dirname $0)));
+
+cd vendor/lan/ice-fork && git tag $1 && git push --tags;

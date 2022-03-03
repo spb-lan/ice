@@ -16,6 +16,8 @@ use Ice\Helper\Json;
 use Ice\Helper\Model as Helper_Model;
 use Ice\Helper\Spatial;
 use Ice\Path;
+use Ifacesoft\Ice\Core\Domain\Value\StringValue;
+use Ifacesoft\Ice\Core\Domain\Value\ValueObject;
 
 /**
  * Class Model
@@ -95,7 +97,7 @@ abstract class Model
     /**
      * Private constructor. Create model: Model::create()
      *
-     * @param  array $row
+     * @param array $row
      * @throws Exception
      * @author dp <denis.a.shestakov@gmail.com>
      *
@@ -111,6 +113,7 @@ abstract class Model
          */
         $modelClass = self::getClass();
         $lowercaseModelName = strtolower(self::getClassName());
+        $length = strlen($lowercaseModelName);
 
         $modelScheme = $modelClass::getScheme();
 
@@ -127,9 +130,9 @@ abstract class Model
                 continue;
             }
 
-            $length = strlen($lowercaseModelName);
             if (strpos($fieldName, $lowercaseModelName) === 0) {
                 $shortFieldName = '/' . substr($fieldName, $length + 1);
+
                 if (array_key_exists($shortFieldName, $row)) {
                     $this->set($fieldName, $row[$shortFieldName]);
                     unset($this->raw[$shortFieldName]);
@@ -230,9 +233,9 @@ abstract class Model
      *  $user->set('data', ['data1' => 'string1', 'data2' => 'string2']); // set value of field data__json
      * ```
      *
-     * @param  array|string $fieldName
-     * @param  mixed $fieldValue
-     * @param  bool $isAffected InfoSave for update
+     * @param array|string $fieldName
+     * @param mixed $fieldValue
+     * @param bool $isAffected InfoSave for update
      * @return Model
      * @throws Exception
      *
@@ -345,7 +348,7 @@ abstract class Model
     {
         $fieldName = trim($fieldName);
 
-        if ($fieldName[0] == '/') {
+        if ($fieldName[0] === '/') {
             $fieldName[0] = '_';
 
             if (!$tableAlias) {
@@ -365,11 +368,11 @@ abstract class Model
      * @param $fieldValue
      * @return array
      *
-     * @author dp <denis.a.shestakov@gmail.com>
-     *
+     * @throws Exception
      * @version 1.2
      * @since   1.0
-     * @throws Exception
+     * @author dp <denis.a.shestakov@gmail.com>
+     *
      */
     private function setValue($fieldName, $fieldValue)
     {
@@ -564,11 +567,11 @@ abstract class Model
      *
      * @return Config
      *
-     * @author dp <denis.a.shestakov@gmail.com>
-     *
+     * @throws Exception
      * @version 0.5
      * @since   0.5
-     * @throws Exception
+     * @author dp <denis.a.shestakov@gmail.com>
+     *
      */
     public static function getConfig()
     {
@@ -578,7 +581,7 @@ abstract class Model
     /**
      * Return localized title of table
      *
-     * @param  null $tableName
+     * @param null $tableName
      * @return string
      *
      * @throws Exception
@@ -601,11 +604,11 @@ abstract class Model
      * Return table name of self model class
      *
      * @return string
-     * @author dp <denis.a.shestakov@gmail.com>
-     *
+     * @throws Exception
      * @version 0.5
      * @since   0.0
-     * @throws Exception
+     * @author dp <denis.a.shestakov@gmail.com>
+     *
      */
     public static function getTableName()
     {
@@ -616,11 +619,11 @@ abstract class Model
      * Return scheme name of self model class
      *
      * @return string
-     * @author dp <denis.a.shestakov@gmail.com>
-     *
+     * @throws Exception
      * @version 1.1
      * @since   1.1
-     * @throws Exception
+     * @author dp <denis.a.shestakov@gmail.com>
+     *
      */
     public static function getSchemeName()
     {
@@ -702,16 +705,16 @@ abstract class Model
      * Return all rows for self model class
      *
      * @param  $pk
-     * @param  string $fieldNames
-     * @param  string|null $dataSourceKey
-     * @param  int $ttl
+     * @param string $fieldNames
+     * @param string|null $dataSourceKey
+     * @param int $ttl
      * @return array
      *
-     * @author dp <denis.a.shestakov@gmail.com>
-     *
+     * @throws Exception
      * @version 1.1
      * @since   0.2
-     * @throws Exception
+     * @author dp <denis.a.shestakov@gmail.com>
+     *
      */
     public static function getRow($pk, $fieldNames, $dataSourceKey = null, $ttl = null)
     {
@@ -733,14 +736,21 @@ abstract class Model
      *
      * @param null $tableAlias
      * @return Query
+     * @throws Exception
      * @todo add order param
      *
-     * @throws Exception
      */
     public static function getSelectQuery($selectFields, array $filterFields = [], array $pagination = null, $dataSourceKey = null, $tableAlias = null)
     {
-        if (!$pagination) {
-            $pagination = ['page' => 1, 'limit' => 0];
+        $pagination = (array)$pagination;
+
+
+        if (!isset($pagination['page'])) {
+            $pagination['page'] = 1;
+        }
+
+        if (!isset($pagination['limit'])) {
+            $pagination['limit'] = 0;
         }
 
         return Query::getBuilder(self::getClass(), $tableAlias)
@@ -756,11 +766,11 @@ abstract class Model
      *
      * @return string
      *
-     * @author dp <denis.a.shestakov@gmail.com>
-     *
+     * @throws Exception
      * @version 0.3
      * @since   0.3
-     * @throws Exception
+     * @author dp <denis.a.shestakov@gmail.com>
+     *
      */
     public static function getPkFieldName()
     {
@@ -783,11 +793,11 @@ abstract class Model
      *
      * @return string
      *
-     * @author dp <denis.a.shestakov@gmail.com>
-     *
+     * @throws Exception
      * @version 0.6
      * @since   0.6
-     * @throws Exception
+     * @author dp <denis.a.shestakov@gmail.com>
+     *
      */
     public static function getPkColumnName()
     {
@@ -799,7 +809,7 @@ abstract class Model
     /**
      * Create table by model
      *
-     * @param  string|null $dataSourceKey
+     * @param string|null $dataSourceKey
      * @return QueryResult
      * @throws Exception
      * @throws \Ice\Exception\Config_Error
@@ -818,13 +828,13 @@ abstract class Model
     /**
      * Drop table by model
      *
-     * @param  string|null $dataSourceKey
+     * @param string|null $dataSourceKey
      * @return QueryResult
-     * @author dp <denis.a.shestakov@gmail.com>
-     *
+     * @throws Exception
      * @version 0.6
      * @since   0.2
-     * @throws Exception
+     * @author dp <denis.a.shestakov@gmail.com>
+     *
      */
     public static function dropTable($dataSourceKey = null)
     {
@@ -836,11 +846,11 @@ abstract class Model
      *
      * @return DataSource
      *
-     * @author dp <denis.a.shestakov@gmail.com>
-     *
+     * @throws Exception
      * @version 1.13
      * @since   0.0
-     * @throws Exception
+     * @author dp <denis.a.shestakov@gmail.com>
+     *
      */
     public static function getDataSource($dataSourceKey = null)
     {
@@ -864,11 +874,11 @@ abstract class Model
      *
      * @return string
      *
-     * @author dp <denis.a.shestakov@gmail.com>
-     *
+     * @throws Exception
      * @version 0.5
      * @since   0.5
-     * @throws Exception
+     * @author dp <denis.a.shestakov@gmail.com>
+     *
      */
     public static function getDataSourceKey()
     {
@@ -890,13 +900,13 @@ abstract class Model
      * @param string $itemKey
      * @param string $itemTitle
      *
+     * @return array
+     * @throws Exception
+     * @since   1.1
+     *
      * @author dp <denis.a.shestakov@gmail.com>
      *
      * @version 1.1
-     * @since   1.1
-     *
-     * @return array
-     * @throws Exception
      */
     public static function getItems($itemKey = '/pk', $itemTitle = '/name')
     {
@@ -916,7 +926,6 @@ abstract class Model
     {
         /** @var Model $modelClass */
         $modelClass = self::getClass();
-
 
         $modelScheme = $modelClass::getScheme();
 
@@ -942,6 +951,16 @@ abstract class Model
         return $queryBuilder->getSelectQuery($fieldNames)->getModel();
     }
 
+    /**
+     * @param null $tableAlias
+     * @return QueryBuilder
+     * @throws Exception
+     */
+    public static function createQueryBuilder($tableAlias = null)
+    {
+        return Query::getBuilder(self::getClass(), $tableAlias);
+    }
+
     public function setPkValue($pkValue)
     {
         /** @var Model $modelClass */
@@ -955,13 +974,13 @@ abstract class Model
     /**
      * Magic get
      *
-     * @deprecated use ->get($fieldName)
-     *
-     * @see Model::get()
-     *
      * @param  $fieldName
      * @return mixed
      * @throws Exception
+     *
+     * @see Model::get()
+     *
+     * @deprecated use ->get($fieldName)
      *
      * @author dp <denis.a.shestakov@gmail.com>
      *
@@ -976,14 +995,14 @@ abstract class Model
     /**
      * Magic set
      *
-     * @deprecated use ->set($fieldName, $value)
-     *
-     * @see Model::set()
-     *
      * @param  $fieldName
      * @param  $value
      * @return Model
      * @throws Exception
+     *
+     * @deprecated use ->set($fieldName, $value)
+     *
+     * @see Model::set()
      *
      * @author dp <denis.a.shestakov@gmail.com>
      *
@@ -998,7 +1017,7 @@ abstract class Model
     /**
      * Get value of model field
      *
-     * @param  null $fieldName
+     * @param null $fieldName
      * @param null $default
      * @return mixed
      * @throws Exception
@@ -1022,7 +1041,7 @@ abstract class Model
             foreach ($fieldName as $name => $alias) {
                 if (is_int($name)) {
                     $name = $alias;
-                } 
+                }
 
                 $fields[$alias] = $this->get($name, $default);
             }
@@ -1065,7 +1084,7 @@ abstract class Model
                     }
 
                     Logger::getInstance(__CLASS__)->exception(
-                        ['field "{$0}" of model "{$1}" is null', [$fieldName, $modelName]],
+                        ['field "{$0}" of model "{$1}" is null', [$fieldName, $modelClass]],
                         __FILE__,
                         __LINE__
                     );
@@ -1156,22 +1175,17 @@ abstract class Model
         throw new Error(['Field {$0} not found in Model {$1}', [$fieldName, $modelName]]);
     }
 
-    public function getPkValue()
-    {
-        return $this->getPk() ? implode('__', $this->getPk()) : null;
-    }
-
     /**
      * Create model instance
      *
-     * @param  array $row
+     * @param array $row
      * @return $this
      *
-     * @author dp <denis.a.shestakov@gmail.com>
-     *
+     * @throws Exception
      * @version 0.0
      * @since   0.0
-     * @throws Exception
+     * @author dp <denis.a.shestakov@gmail.com>
+     *
      */
     public static function create(array $row = [])
     {
@@ -1190,8 +1204,8 @@ abstract class Model
     /**
      * Insert or update model
      *
-     * @param  string|null $dataSourceKey
-     * @param  bool $isSmart
+     * @param string|null $dataSourceKey
+     * @param bool $isSmart
      * @return $this
      * @throws Exception
      *
@@ -1220,7 +1234,6 @@ abstract class Model
             return $this->clearAffected();
         }
 
-        /** @var ModelScheme $modelScheme */
         $modelScheme = $modelClass::getScheme();
 
         $this->affected = array_merge(
@@ -1309,18 +1322,23 @@ abstract class Model
             ->getQueryResult()
             ->getInsertId();
 
-        if ($affected) {
-            if ($isSmart && $model = $modelClass::create(array_filter($this->row, function ($value) {
-                    return $value !== null;
-                }))->find('/pk')
-            ) {
-
-                $this->set($model->getPk());
-            }
-        }
-
         if ($this->pk === null) {
             $this->set(reset($insertId));
+        }
+
+        if ($affected) {
+            if ($isSmart) {
+                $model = $modelClass::create(array_filter($this->get(), function ($value) {
+                    return $value !== null;
+                }));
+                if ($model) {
+                    $uniqueFieldNames = ModelScheme::getInstance(get_class($model))->getUniqueFieldNames();
+
+                    $model->find($uniqueFieldNames); // bug: Need use getUniqueIndex  => WHERE ('PRIMARY' = id) OR (first_unique = first AND second_unique = second)
+
+                    $this->set($model->get($uniqueFieldNames));
+                }
+            }
         }
 
         $this->afterInsert();
@@ -1342,15 +1360,16 @@ abstract class Model
      * Execute select from data source
      *
      * @param  $fieldNames
-     * @param  string|null $dataSourceKey
-     * @param  int $ttl
+     * @param string|null $dataSourceKey
+     * @param int $ttl
      * @param bool $return
      * @return Model|null
+     * @throws Exception
      * @author dp <denis.a.shestakov@gmail.com>
      *
      * @version 0.2
      * @since   0.2
-     * @throws Exception
+     * @todo Не делать запрос, если данные уже загружены
      */
     public function find($fieldNames, $dataSourceKey = null, $ttl = null, $return = true)
     {
@@ -1368,8 +1387,7 @@ abstract class Model
             empty($this->getPk()) ? $affected : array_merge($this->getPk(), $affected),
             ['page' => 1, 'limit' => 1],
             $dataSourceKey
-        )
-            ->getRow(null, $ttl);
+        )->getRow(null, $ttl);
 
         if (!$row) {
             return $return ? $this : null;
@@ -1411,15 +1429,15 @@ abstract class Model
     /**
      * Execute delete for model
      *
-     * @param  string|null $dataSourceKey
+     * @param string|null $dataSourceKey
      * @return Model|null
      *
+     * @throws \Exception
+     * @version 0.2
+     * @since   0.0
      * @author dp <denis.a.shestakov@gmail.com>
      *
      * @bug удаление модели с множественным ключем -> пишет delete from 0 where pk in (?,?,?)
-     * @version 0.2
-     * @since   0.0
-     * @throws \Exception
      */
     public function remove($dataSourceKey = null)
     {
@@ -1546,14 +1564,14 @@ abstract class Model
      * Get query builder by current model
      *
      * @param  $modelClass
-     * @param  null $tableAlias
+     * @param null $tableAlias
      * @return QueryBuilder
      *
-     * @author dp <denis.a.shestakov@gmail.com>
-     *
+     * @throws Exception
      * @version 0.5
      * @since   0.5
-     * @throws Exception
+     * @author dp <denis.a.shestakov@gmail.com>
+     *
      */
     public function getQueryBuilder($modelClass = null, $tableAlias = null)
     {
@@ -1590,15 +1608,15 @@ abstract class Model
      * Return model by primary key
      *
      * @param  $pk
-     * @param  array|string $fieldNames
-     * @param  string|null $dataSourceKey
-     * @param  int $ttl
+     * @param array|string $fieldNames
+     * @param string|null $dataSourceKey
+     * @param int $ttl
      * @return $this
-     * @author dp <denis.a.shestakov@gmail.com>
-     *
+     * @throws Exception
      * @version 1.1
      * @since   0.0
-     * @throws Exception
+     * @author dp <denis.a.shestakov@gmail.com>
+     *
      */
     public static function getModel($pk, $fieldNames, $dataSourceKey = null, $ttl = null)
     {
@@ -1669,20 +1687,9 @@ abstract class Model
         return null;
     }
 
-    /**
-     * @param null $tableAlias
-     * @return QueryBuilder
-     * @throws Exception
-     */
-    public static function createQueryBuilder($tableAlias = null)
+    public function getPkValue()
     {
-        return Query::getBuilder(self::getClass(), $tableAlias);
-    }
-
-    public function setRaw(array $data) {
-        $this->raw = array_merge($this->raw, $data);
-
-        return $this;
+        return $this->getPk() ? implode('__', $this->getPk()) : null;
     }
 
     /**
@@ -1723,6 +1730,13 @@ abstract class Model
         }
 
         return is_array($default) ? $raw : reset($raw);
+    }
+
+    public function setRaw(array $data)
+    {
+        $this->raw = array_merge($this->raw, $data);
+
+        return $this;
     }
 
     /**
@@ -1908,8 +1922,54 @@ abstract class Model
         return $this->getModuleDataFile(get_class($this) . '/' . $pk . '/' . $path, $fileName, $isCreate);
     }
 
-    public function is($fileName)
+    public function is($fileName, $default = null)
     {
-        return (bool)$this->get($fileName);
+        return (bool)$this->get($fileName, $default);
+    }
+
+    /**
+     * @param array $map
+     * @return array|Model|mixed|string
+     * @throws Exception
+     */
+    public function map(array $map)
+    {
+        /** @var Model $modelClass */
+        $modelClass = get_class($this);
+
+        $array = $this->get();
+
+        $deleted = [];
+
+        foreach ($map as $alias => $field) {
+            $type = null;
+
+            if (is_array($field)) {
+                /** @var ValueObject $type */
+                list($field, $type) = array_pad($field, 2, StringValue::class);
+            }
+
+            $field = $modelClass::getFieldName($field);
+
+            if (is_int($alias)) {
+                $alias = $field;
+            }
+
+            $array[$alias] = $this->get($field, '');
+
+            if ($type) {
+                $array[$alias] = $type::create($array[$alias])->getValue();
+            }
+
+            if ($field !== $alias) {
+                $deleted[] = $field;
+            }
+        }
+
+        foreach (array_unique($deleted) as $field) {
+            unset($array[$field]);
+        }
+
+        return $array;
     }
 }

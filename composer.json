@@ -1,5 +1,5 @@
 {
-  "name": "ifacesoft/ice",
+  "name": "lan/ice-fork",
   "description": "Ice Open Source PHP Framework",
   "homepage": "http://iceframework.net",
   "type": "library",
@@ -22,45 +22,27 @@
       "email": "denis.a.shestakov@gmail.com"
     }
   ],
-  "autoload": {
-    "psr-4": {
-      "Ice\\": "source/Ice/",
-      "Ice\\Core\\": "source/Ice/Core/",
-      "Ice\\Helper\\": "source/Ice/Helper/",
-      "Ice\\Exception\\": "source/Ice/Exception/",
-      "Ice\\DateProvider\\": "source/Ice/DataProvider/",
-      "Ice\\Render\\": "source/Ice/Render/"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Test\\Ifacesoft\\Ice\\Core\\": "test/unit/core",
-      "Test\\Ifacesoft\\Ice\\Cli\\": "test/unit/cli",
-      "Test\\Ifacesoft\\Ice\\Http\\": "test/unit/http"
-    }
-  },
   "require": {
-    "php": "5.6.* || 7.0.* || 7.1.* || 7.2.* || 7.3.* || 7.4.*",
-    "ifacesoft/ice-cli": "0.0.*",
-    "ifacesoft/ice-http": "0.0.*",
+    "php": "7.4.* || 8.0.*",
+    "spb-lan/ice-cli-fork": "0.0.*",
+    "spb-lan/ice-http-fork": "0.0.*",
     "mrclay/minify": "3.0.*",
-    "phpmailer/phpmailer": "6.0.*",
-    "phpoffice/phpspreadsheet": "1.11.*",
-    "tarantool/client": "0.4.*",
-    "rybakit/msgpack": "0.2.*"
+    "phpmailer/phpmailer": "^6",
+    "phpoffice/phpword": "0.18.*",
+    "phpoffice/phpspreadsheet": "1.18.*.*",
+    "tarantool/client": "0.9.*",
+    "rybakit/msgpack": "0.8.*"
   },
   "require-dev": {
     "squizlabs/php_codesniffer": "dev-master",
     "ccampbell/chromephp": "dev-master",
     "lox/xhprof": "dev-master",
-    "codeception/codeception": "2.2.*",
-    "phpunit/php-invoker": "1.1.*",
-    "phpunit/dbunit": "2.0.*"
+    "codeception/codeception": "5.0.x-dev"
   },
   "bin": [
-    "bin/ice"
-  ],
-  "config": {
-    "secure-http": false
-  }
+    "bin/ice",
+    "bin/ice-exec-ice",
+    "bin/ice-release",
+    "bin/ice-orm-sync"
+  ]
 }

@@ -86,10 +86,11 @@ class Sql extends QueryTranslator
     /**
      * Translate set part
      *
-     * @param array $part
-     * @param $modelClassTableAlias
+     * @param Query $query
+     * @param DataSource $dataSource
      * @return string
      *
+     * @throws Exception
      * @author dp <denis.a.shestakov@gmail.com>
      *
      * @version 1.13
@@ -105,7 +106,7 @@ class Sql extends QueryTranslator
 
         if ($part['rowCount'] > 1) {
             $part['_update'] = true;
-            return $this->translateValues($part, $modelClassTableAlias);
+            return $this->translateValues($query, $dataSource, $part);
         }
 
         $modelClass = $query->getQueryBuilder()->getModelClass();
@@ -151,21 +152,29 @@ class Sql extends QueryTranslator
     /**
      * Translate values part
      *
-     * @param array $part
-     * @param $modelClassTableAlias
+     * @param Query $query
+     * @param DataSource $dataSource
+     * @param null $updatePart
      * @return string
      *
+     * @throws Exception
      * @author dp <denis.a.shestakov@gmail.com>
      *
      * @version 1.13
      * @since   0.0
      */
-    protected function translateValues(Query $query, DataSource $dataSource)
+    protected function translateValues(Query $query, DataSource $dataSource, $updatePart = null)
     {
-        $part = $query->getQueryBuilder()->getSqlParts(strtolower(substr(__FUNCTION__, strlen('translate'))));
+        $part = $updatePart
+            ? $updatePart
+            : $query->getQueryBuilder()->getSqlParts(strtolower(substr(__FUNCTION__, strlen('translate'))));
 
         $update = $part['_update'];
+        //если есть колонки которые нужно прибавить к значению в БД
+        $addToValues = isset($part['_add_to_values']) ? array_flip($part['_add_to_values']) : [];
+
         unset($part['_update']);
+        unset($part['_add_to_values']);
 
         if (!$part) {
             return '';
@@ -229,9 +238,10 @@ class Sql extends QueryTranslator
             $sql .= implode(
                 ',',
                 array_map(
-                    function ($fieldName) use ($fieldColumnMap) {
+                    function ($fieldName) use ($fieldColumnMap, $addToValues) {
                         $columnName = $fieldColumnMap[$fieldName];
-                        return "\n\t" . '`' . $columnName . '`=' . Sql::SQL_CLAUSE_VALUES . '(`' . $columnName . '`)';
+                        $valueToAdd = isset($addToValues[$fieldName]) ? ' `' . $columnName . '` + ' : '';
+                        return "\n\t" . '`' . $columnName . '`=' . $valueToAdd . Sql::SQL_CLAUSE_VALUES . '(`' . $columnName . '`)';
                     },
                     $fieldNames
                 )
@@ -500,7 +510,7 @@ class Sql extends QueryTranslator
                     } else {
                         if ($tableAlias === '') {
                             $fieldAlias = $fieldName . ' AS `' . $fieldAlias . '`';
-                        } elseif ($fieldName[0] == '\'') {
+                        } elseif ($fieldName[0] === '\'') {
                             $fieldAlias = $fieldName . ' AS `' . $fieldAlias . '`';
                         } else {
                             $fieldAlias = $fieldName . ' AS `' . trim($fieldAlias, '`') . '`';
@@ -528,7 +538,7 @@ class Sql extends QueryTranslator
             $sql .= "\n" . Sql::SQL_STATEMENT_SELECT . ($distinct ? ' ' . Sql::SQL_DISTINCT . ' ' : '') . ($calcFoundRows ? ' ' . Sql::SQL_CALC_FOUND_ROWS . ' ' : '') . ($sqlNoCache ? ' ' . Sql::SQL_SQL_NO_CACHE . ' ' : '') .
                 "\n\t" . implode(',' . "\n\t", $fields) .
                 "\n" . Sql::SQL_CLAUSE_FROM .
-                "\n" . '('. implode(
+                "\n" . '(' . implode(
                     "\n" . Sql::SQL_CLAUSE_UNION . "\n",
                     array_map(
                         function ($query) use ($dataSource) {
@@ -594,8 +604,7 @@ class Sql extends QueryTranslator
     /**
      * Translate join part
      *
-     * @param array $part
-     * @param $modelClassTableAlias
+     * @param Query $query
      * @param DataSource $dataSource
      * @return string
      *
@@ -620,9 +629,7 @@ class Sql extends QueryTranslator
         }
 
         foreach ($part as $tableAlias => $joinTable) {
-            /**
-             * @var Model $joinModelClass
-             */
+            /** @var Model $joinModelClass */
             $joinModelClass = $joinTable['class'];
 
             if ($joinModelClass instanceof QueryBuilder) {

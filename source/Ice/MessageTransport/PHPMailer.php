@@ -49,8 +49,10 @@ class PHPMailer extends MessageTransport
         $this->phpMailer->SMTPDebug = $config->get('debug');
         $this->phpMailer->Debugoutput = 'html';
 
-        $this->setHost($config->get('smtpHost'));
-        $this->setPort($config->get('smtpPort'));
+        list($smtpHost, $smtpPort) = $config->getParams(['smtpHost', 'smtpPort']);
+
+        $this->setHost($smtpHost);
+        $this->setPort($smtpPort);
 
         if ($username = $config->get('smtpUser')) {
             $this->phpMailer->SMTPAuth = true;

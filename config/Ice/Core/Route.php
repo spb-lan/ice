@@ -1,5 +1,7 @@
 <?php
 
+namespace Ice\Action;
+
 return [
     'ice_main' => [
         'route' => '/',
@@ -58,12 +60,28 @@ return [
         'route' => '/render/excel',
         'request' => [
             'GET' => [
-                'actionClass' => 'Ice:Render_Excel',
+                'actionClass' => Render_Excel::class,
             ],
             'POST' => [
-                'actionClass' => 'Ice:Render_Excel',
+                'actionClass' => Render_Excel::class,
             ]
         ]
+    ],
+    'ice_worker_status' => [
+        'route' => '/worker/{$worker_key}/status',
+        'params' => [
+            'worker_key' => '(\d+)'
+        ],
+        'request' => [
+            'GET' => [
+                'actionClass' => 'Ice:Worker_Status',
+                'response' => ['contentType' => 'json']
+            ],
+            'POST' => [
+                'actionClass' => 'Ice:Worker_Status',
+                'response' => ['contentType' => 'json']
+            ],
+        ],
     ],
     '_Security' => '/security',
     '_Private' => '/private',

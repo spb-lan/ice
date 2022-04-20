@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'version'=>'0',
     'default' => 'Ice\Render\Php',
     'Ice\Render\Cli' => [],
     'Ice\Render\Json' => [],

@@ -3,6 +3,7 @@ namespace Ice\Widget;
 
 use Ice\Action\Resource_Css;
 use Ice\Action\Resource_Js;
+use Ice\Core\Config;
 use Ice\Core\Environment;
 use Ice\Core\Render;
 use Ice\Helper\File;
@@ -34,7 +35,7 @@ class Resource_Static extends Resource
      */
     protected function build(array $input)
     {
-        $version = Ice\Core\Config::getInstance(Render::class)->get('version');
+        $version = Config::getInstance(Render::class)->get('version');
 
         $styleCacheFile = getCompiledResourceDir() . 'style.cache.php';
 

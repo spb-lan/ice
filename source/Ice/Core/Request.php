@@ -219,7 +219,9 @@ class Request
 
     public static function init()
     {
-        $allowedLanCorsHeaders = array_intersect_key(Config::getInstance(__CLASS__)->gets('allowCorsForHeaders'), getallheaders());
+        $a = Config::getInstance(__CLASS__)->get('allowCorsForHeaders', false);
+
+        $allowedLanCorsHeaders = array_intersect_key((is_array($a) ? $a : []), getallheaders());
 
         $setHeaders = function ($methods, $headers, $credentials) {
             Http::setHeader('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
@@ -233,18 +235,18 @@ class Request
         };
 
         $findHeader = false;
-
+        
         foreach ($allowedLanCorsHeaders as $header => $value) {
             if (!empty($allowedLanCorsHeaders) && $allowedLanCorsHeaders[$header]['code'] == self::getHeader($header)) {
                 $findHeader = $header;
                 break;
             }
         }
-
+        
         //если приходит хедер то ставим корсы из хедера
-        if (!empty($findHeader)) {
+        if ($findHeader) {
             $setHeaders($allowedLanCorsHeaders[$findHeader]['methods'], $allowedLanCorsHeaders[$findHeader]['headers'], $allowedLanCorsHeaders[$findHeader]['credentials']);
-        } else {
+        } else if (isset($_SERVER['HTTP_ORIGIN']) && isset($cors[$_SERVER['HTTP_ORIGIN']])) {
             $cors = Config::getInstance(__CLASS__)->gets('cors');
             $setHeaders($cors[$_SERVER['HTTP_ORIGIN']]['methods'], $cors[$_SERVER['HTTP_ORIGIN']]['headers'], $cors[$_SERVER['HTTP_ORIGIN']]['credentials']);
         }

@@ -23,7 +23,7 @@
     }
   ],
   "require": {
-    "php": "7.4.* || 8.0.*",
+    "php": "7.4.* || 8.0.* || 8.3.* ",
     "spb-lan/ice-cli-fork": "0.0.*",
     "spb-lan/ice-http-fork": "0.0.*",
     "mrclay/minify": "3.0.*",

@@ -31,7 +31,8 @@
     "phpoffice/phpword": "0.18.*",
     "phpoffice/phpspreadsheet": "1.18.*.*",
     "tarantool/client": "0.9.*",
-    "rybakit/msgpack": "0.8.*"
+    "rybakit/msgpack": "0.8.*",
+    "vlucas/phpdotenv": "^2.4.0 | ^5.4.1"
   },
   "require-dev": {
     "squizlabs/php_codesniffer": "dev-master",

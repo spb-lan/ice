@@ -187,11 +187,15 @@ class Logger
 //        gc_collect_cycles();
 
         //todo: Response output mast by here
-        if ($error = error_get_last()) {
+        $error = error_get_last();
+        //turn off depreceted temprary
+        //if ($error && isset($error['type']) && $error['type'] != 8192) {
+            if ($error) {
 //            Http::setStatusCodeHeader(500);
             $error['message'] .= ' [peak: ' . Helper_Profiler::getPrettyMemory(memory_get_peak_usage(true)) . ']';
 
             self::errorHandler($error['type'], $error['message'], $error['file'], $error['line'], []);
+
             self::renderLog();
         }
 
@@ -366,9 +370,9 @@ class Logger
     {
         try {
             $log->set([
-                    'logger_class' => $this->class,
-                    'session' => session_id()
-                ])->save();
+                'logger_class' => $this->class,
+                'session' => session_id()
+            ])->save();
         } catch (Exception $e) {
 
         } catch (Throwable $e) {

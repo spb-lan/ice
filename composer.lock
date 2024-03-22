@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3c82cca5444c6e75e15e9b9a7c487849",
+    "content-hash": "22d3e765d7b41046cf1fe5c4a178c853",
     "packages": [
         {
             "name": "ezyang/htmlpurifier",
@@ -1700,20 +1700,20 @@
         },
         {
             "name": "spb-lan/ice-cli-fork",
-            "version": "0.0.7",
+            "version": "0.0.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spb-lan/ice-cli-fork.git",
-                "reference": "1f2b174d0cbee9b551aa43a7183d0181006021d0"
+                "reference": "376965d7a6683c141fbf68d47db4cd5d9d50fa73"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spb-lan/ice-cli-fork/zipball/1f2b174d0cbee9b551aa43a7183d0181006021d0",
-                "reference": "1f2b174d0cbee9b551aa43a7183d0181006021d0",
+                "url": "https://api.github.com/repos/spb-lan/ice-cli-fork/zipball/376965d7a6683c141fbf68d47db4cd5d9d50fa73",
+                "reference": "376965d7a6683c141fbf68d47db4cd5d9d50fa73",
                 "shasum": ""
             },
             "require": {
-                "spb-lan/ice-core-fork": "0.0.7"
+                "spb-lan/ice-core-fork": "0.0.8"
             },
             "bin": [
                 "bin/ice-cli",
@@ -1733,22 +1733,22 @@
             "description": "Ice Cli",
             "support": {
                 "issues": "https://github.com/spb-lan/ice-cli-fork/issues",
-                "source": "https://github.com/spb-lan/ice-cli-fork/tree/0.0.7"
+                "source": "https://github.com/spb-lan/ice-cli-fork/tree/0.0.8"
             },
-            "time": "2024-03-22T05:43:34+00:00"
+            "time": "2024-03-22T06:24:32+00:00"
         },
         {
             "name": "spb-lan/ice-core-fork",
-            "version": "0.0.7",
+            "version": "0.0.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spb-lan/ice-core-fork.git",
-                "reference": "fc72b44cfc086fa73229548e3c979f26fe1fceef"
+                "reference": "6c9776da3cbaeb2d2b9653819d6aa846aba5a386"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spb-lan/ice-core-fork/zipball/fc72b44cfc086fa73229548e3c979f26fe1fceef",
-                "reference": "fc72b44cfc086fa73229548e3c979f26fe1fceef",
+                "url": "https://api.github.com/repos/spb-lan/ice-core-fork/zipball/6c9776da3cbaeb2d2b9653819d6aa846aba5a386",
+                "reference": "6c9776da3cbaeb2d2b9653819d6aa846aba5a386",
                 "shasum": ""
             },
             "require": {
@@ -1768,26 +1768,26 @@
             "description": "Ice Core Module",
             "support": {
                 "issues": "https://github.com/spb-lan/ice-core-fork/issues",
-                "source": "https://github.com/spb-lan/ice-core-fork/tree/0.0.7"
+                "source": "https://github.com/spb-lan/ice-core-fork/tree/0.0.8"
             },
-            "time": "2024-03-22T05:27:16+00:00"
+            "time": "2024-03-22T06:10:46+00:00"
         },
         {
             "name": "spb-lan/ice-http-fork",
-            "version": "0.0.6",
+            "version": "0.0.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spb-lan/ice-http-fork.git",
-                "reference": "cda0a31ed2ce678fe2ae9890850a9d94d233a42f"
+                "reference": "e339d9b43fcafd138ebee0cfaa5aa0bdeec18099"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spb-lan/ice-http-fork/zipball/cda0a31ed2ce678fe2ae9890850a9d94d233a42f",
-                "reference": "cda0a31ed2ce678fe2ae9890850a9d94d233a42f",
+                "url": "https://api.github.com/repos/spb-lan/ice-http-fork/zipball/e339d9b43fcafd138ebee0cfaa5aa0bdeec18099",
+                "reference": "e339d9b43fcafd138ebee0cfaa5aa0bdeec18099",
                 "shasum": ""
             },
             "require": {
-                "spb-lan/ice-core-fork": "0.0.7"
+                "spb-lan/ice-core-fork": "0.0.8"
             },
             "bin": [
                 "bin/ice-index.php"
@@ -1806,9 +1806,9 @@
             "description": "Ice Http",
             "support": {
                 "issues": "https://github.com/spb-lan/ice-http-fork/issues",
-                "source": "https://github.com/spb-lan/ice-http-fork/tree/0.0.6"
+                "source": "https://github.com/spb-lan/ice-http-fork/tree/0.0.7"
             },
-            "time": "2024-03-22T05:50:46+00:00"
+            "time": "2024-03-22T06:24:15+00:00"
         },
         {
             "name": "symfony/polyfill-ctype",

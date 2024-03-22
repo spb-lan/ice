@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "590d69bd78ba6d1fd4f176751eb44f48",
+    "content-hash": "3c82cca5444c6e75e15e9b9a7c487849",
     "packages": [
         {
             "name": "ezyang/htmlpurifier",
@@ -1700,20 +1700,20 @@
         },
         {
             "name": "spb-lan/ice-cli-fork",
-            "version": "0.0.5",
+            "version": "0.0.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spb-lan/ice-cli-fork.git",
-                "reference": "940bc326c036eebdd6ad1557a72c606b0124e001"
+                "reference": "1f2b174d0cbee9b551aa43a7183d0181006021d0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spb-lan/ice-cli-fork/zipball/940bc326c036eebdd6ad1557a72c606b0124e001",
-                "reference": "940bc326c036eebdd6ad1557a72c606b0124e001",
+                "url": "https://api.github.com/repos/spb-lan/ice-cli-fork/zipball/1f2b174d0cbee9b551aa43a7183d0181006021d0",
+                "reference": "1f2b174d0cbee9b551aa43a7183d0181006021d0",
                 "shasum": ""
             },
             "require": {
-                "spb-lan/ice-core-fork": "0.0.6"
+                "spb-lan/ice-core-fork": "0.0.7"
             },
             "bin": [
                 "bin/ice-cli",
@@ -1733,22 +1733,22 @@
             "description": "Ice Cli",
             "support": {
                 "issues": "https://github.com/spb-lan/ice-cli-fork/issues",
-                "source": "https://github.com/spb-lan/ice-cli-fork/tree/0.0.5"
+                "source": "https://github.com/spb-lan/ice-cli-fork/tree/0.0.7"
             },
-            "time": "2024-03-22T03:25:18+00:00"
+            "time": "2024-03-22T05:43:34+00:00"
         },
         {
             "name": "spb-lan/ice-core-fork",
-            "version": "0.0.6",
+            "version": "0.0.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spb-lan/ice-core-fork.git",
-                "reference": "a5ff1d411722f4b112da5aa0cba32cb2dd39e523"
+                "reference": "fc72b44cfc086fa73229548e3c979f26fe1fceef"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spb-lan/ice-core-fork/zipball/a5ff1d411722f4b112da5aa0cba32cb2dd39e523",
-                "reference": "a5ff1d411722f4b112da5aa0cba32cb2dd39e523",
+                "url": "https://api.github.com/repos/spb-lan/ice-core-fork/zipball/fc72b44cfc086fa73229548e3c979f26fe1fceef",
+                "reference": "fc72b44cfc086fa73229548e3c979f26fe1fceef",
                 "shasum": ""
             },
             "require": {
@@ -1768,26 +1768,26 @@
             "description": "Ice Core Module",
             "support": {
                 "issues": "https://github.com/spb-lan/ice-core-fork/issues",
-                "source": "https://github.com/spb-lan/ice-core-fork/tree/0.0.6"
+                "source": "https://github.com/spb-lan/ice-core-fork/tree/0.0.7"
             },
-            "time": "2024-03-22T03:16:46+00:00"
+            "time": "2024-03-22T05:27:16+00:00"
         },
         {
             "name": "spb-lan/ice-http-fork",
-            "version": "0.0.5",
+            "version": "0.0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spb-lan/ice-http-fork.git",
-                "reference": "3dd7ef76044c8c17c0432201b003214d3014020d"
+                "reference": "cda0a31ed2ce678fe2ae9890850a9d94d233a42f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spb-lan/ice-http-fork/zipball/3dd7ef76044c8c17c0432201b003214d3014020d",
-                "reference": "3dd7ef76044c8c17c0432201b003214d3014020d",
+                "url": "https://api.github.com/repos/spb-lan/ice-http-fork/zipball/cda0a31ed2ce678fe2ae9890850a9d94d233a42f",
+                "reference": "cda0a31ed2ce678fe2ae9890850a9d94d233a42f",
                 "shasum": ""
             },
             "require": {
-                "spb-lan/ice-core-fork": "0.0.6"
+                "spb-lan/ice-core-fork": "0.0.7"
             },
             "bin": [
                 "bin/ice-index.php"
@@ -1806,9 +1806,9 @@
             "description": "Ice Http",
             "support": {
                 "issues": "https://github.com/spb-lan/ice-http-fork/issues",
-                "source": "https://github.com/spb-lan/ice-http-fork/tree/0.0.5"
+                "source": "https://github.com/spb-lan/ice-http-fork/tree/0.0.6"
             },
-            "time": "2024-03-22T03:26:00+00:00"
+            "time": "2024-03-22T05:50:46+00:00"
         },
         {
             "name": "symfony/polyfill-ctype",
@@ -3193,16 +3193,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "10.5.14",
+            "version": "10.5.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "4cf8824bab39c2dd57b57b9f6332f7135e2a3a49"
+                "reference": "86376e05e8745ed81d88232ff92fee868247b07b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/4cf8824bab39c2dd57b57b9f6332f7135e2a3a49",
-                "reference": "4cf8824bab39c2dd57b57b9f6332f7135e2a3a49",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/86376e05e8745ed81d88232ff92fee868247b07b",
+                "reference": "86376e05e8745ed81d88232ff92fee868247b07b",
                 "shasum": ""
             },
             "require": {
@@ -3274,7 +3274,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/10.5.14"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/10.5.15"
             },
             "funding": [
                 {
@@ -3290,7 +3290,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-03-21T07:31:09+00:00"
+            "time": "2024-03-22T04:17:47+00:00"
         },
         {
             "name": "psr/event-dispatcher",

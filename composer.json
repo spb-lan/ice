@@ -24,8 +24,8 @@
   ],
   "require": {
     "php": "7.4.* || 8.0.* || 8.3.* ",
-    "spb-lan/ice-cli-fork": "0.0.5",
-    "spb-lan/ice-http-fork": "0.0.5",
+    "spb-lan/ice-cli-fork": "0.0.7",
+    "spb-lan/ice-http-fork": "0.0.6",
     "mrclay/minify": "3.0.*",
     "phpmailer/phpmailer": "^6",
     "phpoffice/phpword": "0.18.*",

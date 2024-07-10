@@ -60,3 +60,8 @@
         }
     }
 </script>
+<style>
+    .cke_notification_warning{
+        display: none!important;
+    }
+</style>

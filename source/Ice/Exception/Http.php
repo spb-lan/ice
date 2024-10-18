@@ -7,6 +7,8 @@ use Ice\Core\Exception;
 
 abstract class Http extends Exception
 {
+    const TITLE = '';
+
     public function __construct($message, $errcontext = [], $previous = null, $errfile = null, $errline = null, $errno = 0)
     {
         parent::__construct($message, $errcontext, $previous, $errfile, $errline, $errno);

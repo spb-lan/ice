@@ -4,7 +4,7 @@ namespace Ice\Exception;
 
 use Ice\Core\Exception;
 
-abstract class AbstractHttpTitleException extends Exception
+abstract class HttpTitleException extends Exception
 {
     public function __construct()
     {

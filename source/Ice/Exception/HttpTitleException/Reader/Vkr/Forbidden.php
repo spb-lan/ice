@@ -2,7 +2,7 @@
 
 namespace Ice\Exception;
 
-class HttpTitleException_Reader_Vkr_Forbidden extends AbstractHttpTitleException
+class HttpTitleException_Reader_Vkr_Forbidden extends HttpTitleException
 {
     public function getStatusCode(): int
     {

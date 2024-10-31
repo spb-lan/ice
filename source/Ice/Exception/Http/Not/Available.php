@@ -2,7 +2,7 @@
 
 namespace Ice\Exception;
 
-class Http_Read_Unavaialbe extends HttpTitle
+class Http_Read_Unavailable extends HttpTitle
 {
     const TITLE = 'Чтение не доступно';
     const HTTP_CODE = 400;

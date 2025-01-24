@@ -27,4 +27,16 @@ return [
         ],
         'parent' => 'ice_security'
     ],
+    'ice_ckeditor_get_image' => [
+        'route' => '/{$image_name}',
+        'params' => [
+            'image_name' => '(.*)'
+        ],
+        'request' => [
+            'GET' => [
+                'actionClass' => 'Ice:Vendor_CKEditor_GetImage',
+            ]
+        ],
+        'parent' => 'ice_security'
+    ],
 ];

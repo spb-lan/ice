@@ -10,8 +10,6 @@ use Ice\Render\Php;
 
 class Vendor_CKEditor_Browse extends Action
 {
-
-
     protected static function config()
     {
         return [
@@ -30,11 +28,38 @@ class Vendor_CKEditor_Browse extends Action
         $files = [];
         foreach (new \DirectoryIterator(Directory::get($path)) as $fileInfo) {
             if ($fileInfo->isDot()) continue;
-            $files[] = '/ckeditor/' . $fileInfo->getFilename();
+
+            $files[] = $this->getHostname() . '/ice/ckeditor/' . $fileInfo->getFilename();
         }
+
         $view = Php::getInstance()->fetch('Ice\Action\Vendor_CKEditor_Browse', ['files' => $files]);
         App::getResponse()->setContent($view);
+    }
 
+    private function getHostname()
+    {
+        $hostname = $this->getHostnameFromSecurityIfAvailable();
 
+        if($hostname){
+            return $hostname;
+        }
+
+        return $this->getHostnameFromServerEnvironment();
+    }
+
+    private function getHostnameFromSecurityIfAvailable()
+    {
+        $ebsClassname = '\Ebs\Security\Ebs';
+        if (class_exists($ebsClassname)) {
+            return $ebsClassname::getInstance()->getHost('admin');
+        }
+
+        return '';
+    }
+
+    private function getHostnameFromServerEnvironment()
+    {
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https://" : "http://";
+        return $scheme .$_SERVER['HTTP_HOST'];
     }
 }

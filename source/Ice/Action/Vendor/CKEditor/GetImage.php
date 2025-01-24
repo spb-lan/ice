@@ -4,20 +4,20 @@ namespace Ice\Action;
 
 use Ice\Core\Action;
 use Ice\Core\Config;
+use Ice\DataProvider\Router;
 use Ice\Exception\Http_Not_Found;
 
 class Vendor_CKEditor_GetImage extends Action
 {
     protected static function config()
     {
-        return [
-            'access' => ['roles' => ['ROLE_ICE_ADMIN'], 'request' => null, 'env' => null, 'message' => 'Action: Access denied!'],
-            'cache' => ['ttl' => -1, 'count' => 1000],
-            'actions' => [],
-            'input' => [],
-            'output' => [],
-            'path' => null
+        $config = parent::config();
+
+        $config['input'] = [
+            'image_name' => ['providers' => Router::class]
         ];
+
+        return $config;
     }
 
     public function run(array $input)

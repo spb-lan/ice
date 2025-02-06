@@ -1,0 +1,15 @@
+<?php
+
+namespace Ice\Exception;
+
+class Http_Read_Unavailable extends HttpTitle
+{
+    const TITLE = 'Чтение недоступно';
+    const HTTP_CODE = 400;
+    const HTTP_MESSAGE = 'Forbidden';
+
+    public function getHttpMessage()
+    {
+        return self::HTTP_MESSAGE;
+    }
+}

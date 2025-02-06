@@ -98,7 +98,7 @@ class Vendor_PHPExcel
                     : null;
                 } else {
                     if ($value instanceof RichText) {
-                        $value = $value->getRichTextElements()[0]->getText();
+                        $value = self::convertRichTextElementList($value);
                     }
 
                     if ($value === '') {
@@ -167,5 +167,19 @@ class Vendor_PHPExcel
     public static function getDataFromFile(string $filePath, $ignoreFirstRow = 1, $columnNames = [])
     {
         return array_slice(Vendor_PHPExcel::getData(IOFactory::load($filePath), 0, $columnNames), (int) $ignoreFirstRow);
+    }
+
+    /**
+     * @param RichText $richText
+     * @return string
+     */
+    private static function convertRichTextElementList(RichText $richText): string
+    {
+        $mergedText = '';
+        $richTextElementList = $richText->getRichTextElements();
+        foreach ($richTextElementList as $richTextElement){
+            $mergedText .= $richTextElement->getText();
+        }
+        return $mergedText;
     }
 }

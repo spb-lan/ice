@@ -3,7 +3,9 @@ namespace Ice\Widget;
 
 use Ice\Action\Resource_Css;
 use Ice\Action\Resource_Js;
+use Ice\Core\Config;
 use Ice\Core\Environment;
+use Ice\Core\Render;
 use Ice\Helper\File;
 use Ice\Helper\Hash;
 
@@ -33,6 +35,8 @@ class Resource_Static extends Resource
      */
     protected function build(array $input)
     {
+        $version = Config::getInstance(Render::class)->get('version');
+
         $styleCacheFile = getCompiledResourceDir() . 'style.cache.php';
 
         $styles = File::loadData($styleCacheFile, false);
@@ -55,7 +59,7 @@ class Resource_Static extends Resource
         }
 
         foreach ($styles as $css => $sources) {
-            $this->link(Hash::get($sources, Hash::HASH_CRC32) . '_css', ['value' => $css]);
+            $this->link(Hash::get($sources, Hash::HASH_CRC32) .'_'. $version .'_css', ['value' => $css]);
         }
 
         $javascriptCacheFile = getCompiledResourceDir() . 'javascript.cache.php';
@@ -80,7 +84,7 @@ class Resource_Static extends Resource
         }
 
         foreach ($javascripts as $js => $sources) {
-            $this->script(Hash::get($sources, Hash::HASH_CRC32) . '_js', ['value' => $js]);
+            $this->script(Hash::get($sources, Hash::HASH_CRC32) .'_'. $version . '_js', ['value' => $js]);
         }
     }
 }

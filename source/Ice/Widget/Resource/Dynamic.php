@@ -3,6 +3,7 @@
 namespace Ice\Widget;
 
 use Ice\Action\Resource_Dynamic as Action_Resource_Dynamic;
+use Ice\Core\Config;
 use Ice\Core\Environment;
 use Ice\Core\Render;
 use Ice\DataProvider\Router;
@@ -68,6 +69,8 @@ class Resource_Dynamic extends Resource
      */
     protected function build(array $input)
     {
+        $version = Config::getInstance(Render::class)->get('version');
+
         $javascriptCacheFile = getCompiledResourceDir() . 'javascript.' . $input['routeName'] . '.cache.php';
 
         $javascripts = File::loadData($javascriptCacheFile, false);
@@ -89,7 +92,7 @@ class Resource_Dynamic extends Resource
         }
 
         foreach ($javascripts as $js => $sources) {
-            $this->script(Hash::get($sources, Hash::HASH_CRC32) . '_js', ['value' => $js]);
+            $this->script(Hash::get($sources, Hash::HASH_CRC32) .'_'. $version . '_js', ['value' => $js]);
         }
 
         $styleCacheFile = getCompiledResourceDir() . 'style.' . $input['routeName'] . '.cache.php';
@@ -113,7 +116,7 @@ class Resource_Dynamic extends Resource
         }
 
         foreach ($styles as $css => $sources) {
-            $this->link(Hash::get($sources, Hash::HASH_CRC32) . '_css', ['value' => $css]);
+            $this->link(Hash::get($sources, Hash::HASH_CRC32) .'_'. $version . '_css', ['value' => $css]);
         }
 
         $this->loaded = true;

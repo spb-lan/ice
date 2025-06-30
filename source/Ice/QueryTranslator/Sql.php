@@ -823,7 +823,19 @@ class Sql extends QueryTranslator
 
         $sql = '';
 
-        $scheme = each($part);
+        //убираем старый вонючий код, фу-фу-фу так делать
+        //$scheme = each($part);
+
+
+        //заменяем его нестабильным фиксом
+        foreach ($part as $key => $value) {
+            $scheme = [
+                'key' => $key,
+                'value' => $value
+            ];
+        }
+
+        next($part);
 
         /**
          * @var Model $modelClass

@@ -250,7 +250,8 @@ class Mysqli extends DataProvider
 //        ALTER DATABASE dreams_twitter CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci;
         
         // todo: параметры соединения должны назначиться в конфиге
-        $connection->query('SET SESSION time_zone = "' . Date::getServerTimezone() . '";');
+        //TODO:
+       // $connection->query('SET SESSION time_zone = "' . Date::getServerTimezone() . '";');
         $connection->query('SET SESSION group_concat_max_len = 4294967295;');
         $connection->query('SET NAMES utf8mb4;');
 

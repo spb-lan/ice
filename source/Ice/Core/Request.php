@@ -86,7 +86,7 @@ class Request
     /**
      * Return uri from request
      *
-     * @param  bool $withoutQueryString
+     * @param bool $withoutQueryString
      * @return string
      *
      * @author dp <denis.a.shestakov@gmail.com>
@@ -219,17 +219,37 @@ class Request
 
     public static function init()
     {
+        $allowHeadersConfig = Config::getInstance(__CLASS__)->get('allowCorsForHeaders', false);
+
+        $allowedLanCorsHeaders = array_intersect_key((is_array($allowHeadersConfig) ? $allowHeadersConfig : []), getallheaders());
+
         $cors = Config::getInstance(__CLASS__)->gets('cors');
 
-        if (isset($_SERVER['HTTP_ORIGIN']) && isset($cors[$_SERVER['HTTP_ORIGIN']])) {
+        $setHeaders = function ($methods, $headers, $credentials) {
             Http::setHeader('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
-            Http::setHeader('Access-Control-Allow-Methods: ' . implode(', ', $cors[$_SERVER['HTTP_ORIGIN']]['methods']));
-            Http::setHeader('Access-Control-Allow-Headers: ' . implode(', ', $cors[$_SERVER['HTTP_ORIGIN']]['headers']));
+            Http::setHeader('Access-Control-Allow-Methods: ' . implode(', ', $methods));
+            Http::setHeader('Access-Control-Allow-Headers: ' . implode(', ', $headers));
 
-            $credentials = empty($cors[$_SERVER['HTTP_ORIGIN']]['credentials']) || $cors[$_SERVER['HTTP_ORIGIN']]['credentials'] === 'false'
+            $credentials = empty($credentials) || $credentials === 'false'
                 ? 'false' : 'true';
 
             Http::setHeader('Access-Control-Allow-Credentials: ' . $credentials);
+        };
+
+        $findHeader = false;
+
+        foreach ($allowedLanCorsHeaders as $header => $value) {
+            if (!empty($allowedLanCorsHeaders) && $allowedLanCorsHeaders[$header]['code'] == self::getHeader($header)) {
+                $findHeader = $header;
+                break;
+            }
+        }
+
+        //если приходит хедер то ставим корсы из хедера
+        if ($findHeader) {
+            $setHeaders($allowedLanCorsHeaders[$findHeader]['methods'], $allowedLanCorsHeaders[$findHeader]['headers'], $allowedLanCorsHeaders[$findHeader]['credentials']);
+        } else if (isset($_SERVER['HTTP_ORIGIN']) && isset($cors[$_SERVER['HTTP_ORIGIN']])) {
+            $setHeaders($cors[$_SERVER['HTTP_ORIGIN']]['methods'], $cors[$_SERVER['HTTP_ORIGIN']]['headers'], $cors[$_SERVER['HTTP_ORIGIN']]['credentials']);
         }
 
         if (Request::isOptions()) {
@@ -291,9 +311,9 @@ class Request
     }
 
     /**
-     * @todo SERVER_PROTOCOL rename to REQUEST_SCHEME
-     * @deprecated use scheme
      * @return string
+     * @deprecated use scheme
+     * @todo SERVER_PROTOCOL rename to REQUEST_SCHEME
      */
     public static function protocol()
     {

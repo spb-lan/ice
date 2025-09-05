@@ -187,6 +187,40 @@ final class User extends Model
                     'Ice\Core\Validator' => [],
                     'Ice\Widget\Model_Table' => 'text',
                 ],
+                'cookie_consent_created_at' => [
+                    'fieldName' => 'cookie_consent_created_at',
+                    'scheme' => [
+                        'extra' => '',
+                        'type' => 'int(10) unsigned',
+                        'dataType' => 'int',
+                        'length' => '10,0',
+                        'characterSet' => null,
+                        'nullable' => true,
+                        'default' => null,
+                        'comment' => '',
+                    ],
+                    'options' => [
+                        'name' => 'cookie_consent_created_at',
+                        'type' => 'number',
+                    ],
+                ],
+                'cookie_consent_version' => [
+                    'fieldName' => 'cookie_consent_version',
+                    'scheme' => [
+                        'extra' => '',
+                        'type' => 'int(10) unsigned',
+                        'dataType' => 'int',
+                        'length' => '10,0',
+                        'characterSet' => null,
+                        'nullable' => true,
+                        'default' => null,
+                        'comment' => '',
+                    ],
+                    'options' => [
+                        'name' => 'cookie_consent_version',
+                        'type' => 'number',
+                    ],
+                ],
             ],
             'indexes' => [
                 'PRIMARY KEY' => [

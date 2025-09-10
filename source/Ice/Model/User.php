@@ -191,9 +191,9 @@ final class User extends Model
                     'fieldName' => 'cookie_consent_created_at',
                     'scheme' => [
                         'extra' => '',
-                        'type' => 'int(10) unsigned',
-                        'dataType' => 'int',
-                        'length' => '10,0',
+                        'type' => 'timestamp',
+                        'dataType' => 'timestamp',
+                        'length' => '0',
                         'characterSet' => null,
                         'nullable' => true,
                         'default' => null,

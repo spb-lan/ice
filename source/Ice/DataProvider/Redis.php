@@ -76,7 +76,7 @@ class Redis extends DataProvider
 
             if (is_numeric($value)) {
                 $connection->rawCommand('set', $fullKey, $value);
-                $connection->setTimeout($fullKey, $ttl);
+                $connection->expire($fullKey, $ttl);
 
                 $this->checkErrors();
 

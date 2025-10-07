@@ -26,6 +26,7 @@ use Ice\Core\Validator;
 class Pattern extends Validator
 {
     const LETTERS_ONLY = '/^[a-z]+$/i';
+    const ONLY_POSITIVE_INTEGER_OR_EMPTY_STRING = '/^([1-9]\d*)?$/';
 
     /**
      * Validate data by pattern
@@ -52,7 +53,7 @@ class Pattern extends Validator
      *
      * @param array $data
      * @param $name
-     * @param  array $params
+     * @param array $params
      * @return bool
      *
      * @author dp <denis.a.shestakov@gmail.com>

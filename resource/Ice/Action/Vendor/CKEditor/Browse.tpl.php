@@ -44,11 +44,11 @@
     <div class="image">
         <div style="border: 1px solid grey; padding: 4px;">
             <div class="image_wrapper">
-                <img src="<?php echo $file; ?>"/>
+                <img src="<?php echo $file['url']; ?>"/>
             </div>
             <div style="text-align: center;">
-                <button onclick="returnFileUrl('<?php echo $file; ?>')">выбрать</button>
-                <a href="/ice/ckeditor/delete?file=<?php echo str_replace('/ckeditor/', '', $file); ?>">удалить</a>
+                <button onclick="returnFileUrl('<?php echo $file['url']; ?>')">выбрать</button>
+                <a href="/ice/ckeditor/delete?file=<?php echo $file['filename'] ?>">удалить</a>
             </div>
         </div>
     </div>

@@ -18,6 +18,7 @@ return [
         'cache' => 'twig/cache/',
         'extensions' => [
             'production' => [],
+            'sandbox' => [],
             'test' => ['\Twig\Extension\DebugExtension'],
             'development' => ['\Twig\Extension\DebugExtension']
         ]

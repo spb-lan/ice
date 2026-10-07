@@ -376,7 +376,11 @@ class Config
 
             $param = substr($param, strlen($env));
 
-            $params[] = isset($ENV[$param]) ? $ENV[$param] : $param;
+            if (!isset($ENV[$param])) {
+                throw new Config_Error(sprintf('Env variable %s not set (config %s)', $param, $this->getName()));
+            }
+
+            $params[] = $ENV[$param];
         }
 
         return $params;
